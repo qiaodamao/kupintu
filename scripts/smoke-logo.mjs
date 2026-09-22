@@ -43,7 +43,8 @@ const evaluate = async (expr) => {
   return r.result?.result?.value
 }
 
-const check = async (path) => {
+const check = async (path, w, h, mobile) => {
+  await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile })
   await send('Page.navigate', { url: base + path })
   await sleep(2500)
   return evaluate(`(() => {
@@ -62,8 +63,20 @@ const check = async (path) => {
 }
 
 const R = {}
-R['首页'] = await check('/')
-R['编辑器'] = await check('/editor/')
+// 移动端 30px、PC（≥640）28px
+for (const [tag, w, h, mobile, want] of [
+  ['桌面 1440', 1440, 900, false, '28x28'],
+  ['移动 390', 390, 844, true, '30x30'],
+]) {
+  const home = await check('/', w, h, mobile)
+  const editor = await check('/editor/', w, h, mobile)
+  R[tag] = {
+    期望: want,
+    首页: home,
+    编辑器: editor,
+    一致: home.rendered === want && editor.rendered === want,
+  }
+}
 R['favicon'] = await evaluate(`(() => {
   const l = document.querySelector('link[rel="icon"]')
   return l ? l.getAttribute('href') : null

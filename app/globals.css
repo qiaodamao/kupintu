@@ -11,6 +11,11 @@
   --color-brand-500: #6366f1;
   --color-brand-600: #4f46e5;
   --color-brand-700: #4338ca;
+  /* 800~950 必须补齐：dark:bg-brand-950 之类一旦缺档，Tailwind 不会生成该工具类，
+     深色模式下会继续吃浅色的 bg-brand-50（近白），变成刺眼的白底 */
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+  --color-brand-950: #1e1b4b;
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
     'Noto Sans SC', Roboto, Helvetica, Arial, sans-serif;
 }

@@ -44,7 +44,8 @@ const evaluate = async (expr) => {
 
 const PROBE = `(() => {
   const vw = window.innerWidth
-  const h = document.querySelector('header')
+  // 顶栏改成「外层 header（只画边框）+ 内层居中容器」后，flex 布局/内边距都在内层 div 上
+  const h = document.querySelector('header > div') || document.querySelector('header')
   const kids = Array.from(h.children)
   const vis = kids.filter((c) => getComputedStyle(c).display !== 'none')
   const last = vis[vis.length - 1]
@@ -61,6 +62,30 @@ const PROBE = `(() => {
     exportBox: er ? [Math.round(er.left), Math.round(er.right)] : null,
     toolBtnsInTop: tools.length,
     lastRight: lastR ? Math.round(lastR.right) : null,
+  }
+})()`
+
+/** 长图模式下顶栏会出现两组分段控件（模式 / 拼接方向），两者尺寸必须完全一致 */
+const SEGPROBE = `(() => {
+  const groups = Array.from(document.querySelectorAll('header div'))
+    .filter((d) => d.className.includes('rounded-lg') && d.className.includes('bg-slate-100') && d.offsetParent !== null)
+    .map((g) => {
+      const r = g.getBoundingClientRect()
+      return {
+        w: Math.round(r.width),
+        h: Math.round(r.height),
+        btns: Array.from(g.querySelectorAll('button')).map((x) => {
+          const br = x.getBoundingClientRect()
+          return [Math.round(br.width), Math.round(br.height)]
+        }),
+      }
+    })
+  if (groups.length < 2) return '只找到 ' + groups.length + ' 组分段控件'
+  const [a, b] = groups
+  return {
+    模式组: a,
+    方向组: b,
+    一致: a.w === b.w && a.h === b.h && JSON.stringify(a.btns) === JSON.stringify(b.btns),
   }
 })()`
 
@@ -95,9 +120,16 @@ for (const [name, w, h, toLong] of [
     await sleep(1400)
   }
   const p = await evaluate(PROBE)
-  const ok = p.headerOverflow === 0 && p.exportVisible && !p.error
+  let segOk = true
+  // 只在窄屏（< sm 640）比对：宽屏两组都是完整文字，长度本就不同
+  if (toLong && w < 640) {
+    const seg = await evaluate(SEGPROBE)
+    segOk = seg.一致 === true
+    R[name] = { 分段控件: seg }
+  }
+  const ok = p.headerOverflow === 0 && p.exportVisible && !p.error && segOk
   results.push({ name, ...p, ok })
-  R[name] = { 溢出: p.headerOverflow, 导出可见: p.exportVisible, 右边界: p.exportBox, 顶部工具按钮: p.toolBtnsInTop }
+  R[name] = { ...(R[name] ?? {}), 溢出: p.headerOverflow, 导出可见: p.exportVisible, 右边界: p.exportBox, 顶部工具按钮: p.toolBtnsInTop }
 }
 
 /* 390 下点「导出」应弹出导出面板 */
@@ -111,8 +143,30 @@ await mouse('mouseReleased', box.x, box.y)
 await sleep(1200)
 R['导出弹窗'] = await evaluate(`(() => document.body.innerText.includes('下载图片') ? '已打开' : '未打开')()`)
 
+/* 顶栏内边距必须与首页 header 一致：比 computed padding（几何位置会被滚动条影响） */
+const PAD = `(() => {
+  const h = document.querySelector('header > div') || document.querySelector('header')
+  const cs = getComputedStyle(h)
+  return [parseFloat(cs.paddingLeft), parseFloat(cs.paddingRight)]
+})()`
+R['内边距对比'] = {}
+let padOk = true
+for (const [w, h] of [[390, 844], [1024, 800]]) {
+  await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 2, mobile: w < 700 })
+  await send('Page.navigate', { url: base + '/editor/' })
+  await sleep(2400)
+  const ep = await evaluate(PAD)
+  await send('Page.navigate', { url: base + '/' })
+  await sleep(1800)
+  const hp = await evaluate(PAD)
+  const same = ep[0] === hp[0] && ep[1] === hp[1]
+  if (!same) padOk = false
+  R['内边距对比'][w] = { 编辑器: ep, 首页: hp, 一致: same }
+}
+
 R['控制台错误'] = await evaluate('window.__errs || []')
 console.log(JSON.stringify(R, null, 2))
-console.log('\n结论:', results.every((r) => r.ok) ? 'PASS 所有断点顶栏无溢出且导出按钮可见' : 'FAIL')
+const pass = results.every((r) => r.ok) && padOk
+console.log('\n结论:', pass ? 'PASS 所有断点顶栏无溢出、导出按钮可见，且内边距与首页一致' : 'FAIL')
 ws.close()
 process.exit(0)

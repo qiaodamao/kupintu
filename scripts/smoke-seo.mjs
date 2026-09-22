@@ -2,7 +2,9 @@
  * SEO 冒烟：canonical / Open Graph / JSON-LD 结构化数据（浏览器真实 DOM 层校验）
  * 用法：node scripts/smoke-seo.mjs [baseUrl] [port]
  */
-const base = (process.argv[2] ?? 'http://localhost:3222/').replace(/\/$/, '/')
+// 末尾统一补一个 '/'：下面用 base + path.replace(/^\//,'') 拼接，base 少个斜杠就会拼成
+// "http://hosteditor/"（导航失败、仍然停在上一个页面，断言会大面积误报）
+const base = (process.argv[2] ?? 'http://localhost:3222/').replace(/\/editor\/?$/, '').replace(/\/?$/, '/')
 const port = Number(process.argv[3] ?? 9333)
 const SITE = 'https://pintu.kusheji.com'
 

@@ -64,78 +64,102 @@ export function TopBar({ onExport }: { onExport: () => void }) {
   ]
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-1.5 border-b border-slate-200 bg-white/90 px-2 backdrop-blur sm:gap-2 sm:px-3 dark:border-slate-800 dark:bg-slate-900/90">
-      <a href="/" className="flex shrink-0 items-center gap-2 sm:mr-1" title="酷拼图">
-        <Logo className="h-6 w-6 shrink-0 rounded-md" />
-        <span className="hidden text-[15px] font-semibold tracking-tight text-slate-900 sm:block dark:text-white">
-          酷拼图
-        </span>
-      </a>
+    <header className="shrink-0 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
+      {/* 通栏显示（不居中），内边距与首页一致：px-3 / sm:px-4；
+          320 一类超窄屏放不下，单独收紧兜底防裁切 */}
+      <div className="flex h-14 items-center gap-1.5 px-3 max-[359px]:gap-0.5 max-[359px]:px-2 sm:gap-2 sm:px-4">
+        {/* 窄屏下 logo 与模式切换挨得太近，额外补一点间距（宽屏保持原样） */}
+        <a href="/" className="flex shrink-0 items-center gap-2 mr-2.5 max-[359px]:mr-1 sm:mr-2" title="酷拼图">
+          <Logo className="h-[30px] w-[30px] shrink-0 rounded-lg sm:h-7 sm:w-7" />
+          <span className="hidden text-[15px] font-semibold tracking-tight text-slate-900 sm:block dark:text-white">
+            酷拼图
+          </span>
+        </a>
 
-      {/* 窄屏只显示图标，文字用 title 兜底 */}
-      <Segmented
-        value={mode}
-        onChange={setMode}
-        options={[
-          {
-            value: 'grid',
-            title: '布局拼图',
-            label: (
-              <span className="flex items-center gap-1">
-                <IconGrid className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">布局拼图</span>
-              </span>
-            ),
-          },
-          {
-            value: 'long',
-            title: '长图拼接',
-            label: (
-              <span className="flex items-center gap-1">
-                <IconLong className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">长图拼接</span>
-              </span>
-            ),
-          },
-        ]}
-      />
-
-      {mode === 'long' ? (
+        {/* 窄屏只显示图标，文字用 title 兜底 */}
         <Segmented
-          value={longDir}
-          onChange={setLongDir}
+          value={mode}
+          onChange={setMode}
           options={[
-            { value: 'vertical', title: '竖向拼接', label: <>竖<span className="hidden sm:inline">向</span></> },
-            { value: 'horizontal', title: '横向拼接', label: <>横<span className="hidden sm:inline">向</span></> },
+            {
+              value: 'grid',
+              title: '布局拼图',
+              label: (
+                <span className="flex items-center gap-1">
+                  <IconGrid className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">布局拼图</span>
+                </span>
+              ),
+            },
+            {
+              value: 'long',
+              title: '长图拼接',
+              label: (
+                <span className="flex items-center gap-1">
+                  <IconLong className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">长图拼接</span>
+                </span>
+              ),
+            },
           ]}
         />
-      ) : null}
 
-      <div className="mx-1 hidden h-6 w-px shrink-0 bg-slate-200 lg:block dark:bg-slate-700" />
-      {/* 绘制工具在窄屏由画布下方的 MobileTools 承担；这里用外层容器控制显隐
-          （Segmented / Button 自身带 inline-flex，直接传 hidden 会被它覆盖） */}
-      <div className="hidden shrink-0 lg:block">
-        <Segmented value={tool} onChange={setTool} options={tools} />
-      </div>
+        {mode === 'long' ? (
+          <Segmented
+            value={longDir}
+            onChange={setLongDir}
+            options={[
+              {
+                value: 'vertical',
+                title: '竖向拼接',
+                // 单字外面套与图标同尺寸的方框，窄屏下宽度才能和「布局 / 长图」那组完全一致
+                label: (
+                  <span className="flex items-center gap-1">
+                    <span className="grid h-3.5 w-3.5 place-items-center text-xs leading-none">竖</span>
+                    <span className="hidden sm:inline">向</span>
+                  </span>
+                ),
+              },
+              {
+                value: 'horizontal',
+                title: '横向拼接',
+                label: (
+                  <span className="flex items-center gap-1">
+                    <span className="grid h-3.5 w-3.5 place-items-center text-xs leading-none">横</span>
+                    <span className="hidden sm:inline">向</span>
+                  </span>
+                ),
+              },
+            ]}
+          />
+        ) : null}
 
-      <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
-        <span className="hidden sm:inline-flex">
-          <Button size="sm" variant="ghost" onClick={undo} disabled={!canUndo} title="撤销 Ctrl+Z" aria-label="撤销">
-            <IconUndo className="h-4 w-4" />
+        <div className="mx-1 hidden h-6 w-px shrink-0 bg-slate-200 lg:block dark:bg-slate-700" />
+        {/* 绘制工具在窄屏由画布下方的 MobileTools 承担；这里用外层容器控制显隐
+            （Segmented / Button 自身带 inline-flex，直接传 hidden 会被它覆盖） */}
+        <div className="hidden shrink-0 lg:block">
+          <Segmented value={tool} onChange={setTool} options={tools} />
+        </div>
+
+        <div className="ml-auto flex shrink-0 items-center gap-1 lg:gap-1.5">
+          <span className="hidden sm:inline-flex">
+            <Button size="sm" variant="ghost" onClick={undo} disabled={!canUndo} title="撤销 Ctrl+Z" aria-label="撤销">
+              <IconUndo className="h-4 w-4" />
+            </Button>
+          </span>
+          <span className="hidden sm:inline-flex">
+            <Button size="sm" variant="ghost" onClick={redo} disabled={!canRedo} title="重做 Ctrl+Shift+Z" aria-label="重做">
+              <IconRedo className="h-4 w-4" />
+            </Button>
+          </span>
+          <Button size="sm" variant="ghost" onClick={toggleTheme} title="切换主题" aria-label="切换主题">
+            {dark ? <IconSun className="h-4 w-4" /> : <IconMoon className="h-4 w-4" />}
           </Button>
-        </span>
-        <span className="hidden sm:inline-flex">
-          <Button size="sm" variant="ghost" onClick={redo} disabled={!canRedo} title="重做 Ctrl+Shift+Z" aria-label="重做">
-            <IconRedo className="h-4 w-4" />
+          <Button size="sm" variant="primary" onClick={onExport} className="px-2 sm:px-3">
+            <IconDownload className="h-4 w-4" />
+            导出
           </Button>
-        </span>
-        <Button size="sm" variant="ghost" onClick={toggleTheme} title="切换主题" aria-label="切换主题">
-          {dark ? <IconSun className="h-4 w-4" /> : <IconMoon className="h-4 w-4" />}
-        </Button>
-        <Button size="sm" variant="primary" onClick={onExport} className="px-2.5 sm:px-3">
-          <IconDownload className="h-4 w-4" />
-          导出
-        </Button>
+        </div>
       </div>
     </header>
   )

@@ -158,6 +158,10 @@ export default function CanvasStage({
   const [dragKind, setDragKind] = useState<DragState['kind']>('none')
   /** 本次拖动是否开启了撤销事务 */
   const txnRef = useRef(false)
+  /** 活跃指针（触摸时会有多个），用于识别双指缩放 */
+  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map())
+  /** 双指缩放基准：起始指间距与当时的视图缩放 */
+  const pinchRef = useRef<{ dist: number; zoom: number } | null>(null)
 
   const style = useEditor((s) => s.style)
   const annotations = useEditor((s) => s.annotations)
@@ -258,6 +262,32 @@ export default function CanvasStage({
   useEffect(() => {
     if (tool !== 'select' || mode !== 'grid') setSplitHi(null)
   }, [tool, mode])
+
+  /** 以屏幕坐标 (clientX, clientY) 为锚点缩放到指定倍率：该点下的画布内容位置保持不变 */
+  const zoomTo = useCallback(
+    (zoom: number, clientX: number, clientY: number) => {
+      const el = wrapRef.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const ax = clientX - r.left
+      const ay = clientY - r.top
+      setView((v) => {
+        const s0 = fitScale * v.zoom
+        const px0 = (box.w - width * s0) / 2 + v.px
+        const py0 = (box.h - height * s0) / 2 + v.py
+        const lx = (ax - px0) / s0
+        const ly = (ay - py0) / s0
+        const z = Math.max(0.2, Math.min(4, zoom))
+        const s1 = fitScale * z
+        return {
+          zoom: z,
+          px: ax - lx * s1 - (box.w - width * s1) / 2,
+          py: ay - ly * s1 - (box.h - height * s1) / 2,
+        }
+      })
+    },
+    [fitScale, box.w, box.h, width, height],
+  )
 
   const fit = useCallback(() => setView({ zoom: 1, px: 0, py: 0 }), [])
   useEffect(() => {
@@ -437,6 +467,20 @@ export default function CanvasStage({
 
   /* ---------------- 指针交互 ---------------- */
   const onPointerDown = (e: React.PointerEvent) => {
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    // 第二根手指落下 → 进入双指缩放，放弃正在进行的拖拽（否则会和图片拖动打架）
+    if (pointersRef.current.size >= 2) {
+      if (txnRef.current) {
+        endTransaction()
+        txnRef.current = false
+      }
+      dragRef.current = { kind: 'none' }
+      setDragKind('none')
+      setSplitHi(null)
+      const [a, b] = Array.from(pointersRef.current.values())
+      pinchRef.current = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, zoom: view.zoom }
+      return
+    }
     // 点在浮层控件（缩放按钮、图片工具条、标注工具条等）上时不要接管指针：
     // 一旦调用 setPointerCapture，后续 click 会被重定向到容器，按钮的 onClick 就再也收不到
     const t = e.target as HTMLElement | null
@@ -586,6 +630,16 @@ export default function CanvasStage({
   }
 
   const onPointerMove = (e: React.PointerEvent) => {
+    if (pointersRef.current.has(e.pointerId)) {
+      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    }
+    // 双指缩放：以两指中点为锚点，按指间距比例缩放预览视图
+    if (pinchRef.current && pointersRef.current.size >= 2) {
+      const [a, b] = Array.from(pointersRef.current.values())
+      const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1
+      zoomTo(pinchRef.current.zoom * (dist / pinchRef.current.dist), (a.x + b.x) / 2, (a.y + b.y) / 2)
+      return
+    }
     const d = dragRef.current
     const p = toLogical(e.clientX, e.clientY)
     if (d.kind === 'none') {
@@ -705,6 +759,20 @@ export default function CanvasStage({
   }
 
   const onPointerUp = (e: React.PointerEvent) => {
+    pointersRef.current.delete(e.pointerId)
+    // 手指少于两根即退出缩放态；剩下的一根不再续接之前的拖拽
+    if (pointersRef.current.size < 2) {
+      pinchRef.current = null
+      if (dragRef.current.kind !== 'none') {
+        if (txnRef.current) {
+          endTransaction()
+          txnRef.current = false
+        }
+        dragRef.current = { kind: 'none' }
+        setDragKind('none')
+        return
+      }
+    }
     const d = dragRef.current
     const p = toLogical(e.clientX, e.clientY)
     if (d.kind === 'image-swap' && d.active) {
@@ -721,7 +789,9 @@ export default function CanvasStage({
     syncSplitHi(detectSplit(p))
   }
 
-  const onPointerCancel = () => {
+  const onPointerCancel = (e: React.PointerEvent) => {
+    pointersRef.current.delete(e.pointerId)
+    if (pointersRef.current.size < 2) pinchRef.current = null
     if (txnRef.current) {
       endTransaction()
       txnRef.current = false
@@ -877,12 +947,16 @@ export default function CanvasStage({
     <div
       ref={wrapRef}
       className="relative h-full w-full overflow-hidden"
-      style={{ cursor }}
+      // touch-action: none —— 触摸时交给我们的 pointer 逻辑处理，
+      // 否则浏览器会把双指捏合当成「缩放整个页面」、单指拖动当成「滚动页面」
+      style={{ cursor, touchAction: 'none' }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerCancel}
-      onPointerLeave={() => {
+      onPointerLeave={(e) => {
+        pointersRef.current.delete(e.pointerId)
+        if (pointersRef.current.size < 2) pinchRef.current = null
         setHoverSlot(null)
         setSplitHi(null)
       }}

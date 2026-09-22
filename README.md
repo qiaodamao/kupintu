@@ -21,6 +21,7 @@
 - 1~30 张图片、258 个自动生成的布局模板（递归二分树 + 10 种分割策略去重）
 - 拖动图片到另一格交换；拖到画布外文件直接上传
 - 拖动分割线调整格子比例；滚轮缩放图片；Alt/Shift 拖动平移；方向键微调
+- 移动端双指捏合缩放预览区（`touch-action: none`，不会被浏览器当成整页缩放）
 - 画布比例 1:1 / 4:5 / 3:4 / 4:3 / 3:2 / 16:9 / 9:16
 
 **长图拼接**
@@ -129,9 +130,12 @@ scripts/
   smoke-view-zoom.mjs        缩放按钮与图片浮层工具条（pointer capture 回归）
   smoke-split-hint.mjs       分割线 hover 提示与拖拽改比例
   smoke-panel-count.mjs      模板数量选择器可见性与选中态
+  smoke-pinch.mjs            移动端双指捏合只缩放画布、不缩放整页
   smoke-long-style.mjs       长图模式默认样式（需 dev 服务器）
   smoke-logo.mjs             站点 Logo 与 favicon 加载
   smoke-mobile-header.mjs    顶栏在 320/390/768/1024 断点无溢出、按钮可见
+  smoke-dark-mode.mjs        深色模式下品牌芯片的底色亮度与文字对比度
+  smoke-seo.mjs              canonical / OG / Twitter / JSON-LD 结构化数据
 ```
 
 ## 实现要点

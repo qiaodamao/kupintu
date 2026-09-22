@@ -179,7 +179,7 @@ export default function Home() {
       <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-3 sm:px-4">
           <span className="flex shrink-0 items-center gap-2">
-            <Logo className="h-6 w-6 shrink-0 rounded-md" />
+            <Logo className="h-[30px] w-[30px] shrink-0 rounded-lg sm:h-7 sm:w-7" />
             <span className="text-[15px] font-semibold tracking-tight">酷拼图</span>
           </span>
           <nav className="ml-4 hidden gap-5 text-sm text-slate-600 md:flex dark:text-slate-300">

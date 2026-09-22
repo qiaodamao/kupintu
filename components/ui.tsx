@@ -103,7 +103,8 @@ export function Segmented<T extends string>({
           title={o.title}
           onClick={() => onChange(o.value)}
           className={cn(
-            'flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] px-2.5 py-1.5 text-xs font-medium transition-colors',
+            // h-7 固定高度：否则「图标选项」比「文字选项」矮 2px，相邻两组分段控件看起来一大一小
+            'flex h-7 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] px-2.5 text-xs font-medium transition-colors',
             value === o.value
               ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-300'
               : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200',

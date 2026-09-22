@@ -86,7 +86,11 @@ export default function Editor() {
       <TopBar onExport={() => setExportOpen(true)} />
 
       <div className="flex min-h-0 flex-1">
-        <aside className="scroll-thin hidden w-[276px] shrink-0 overflow-y-auto border-r border-slate-200 bg-white lg:block dark:border-slate-800 dark:bg-slate-900">
+        {/* touch-action: pan-y —— 面板仍可纵向滚动，但双指捏合不会去缩放整个页面 */}
+        <aside
+          className="scroll-thin hidden w-[276px] shrink-0 overflow-y-auto border-r border-slate-200 bg-white lg:block dark:border-slate-800 dark:bg-slate-900"
+          style={{ touchAction: 'pan-y' }}
+        >
           <ImagePanel onPick={pick} />
         </aside>
 
@@ -131,7 +135,10 @@ export default function Editor() {
           <MobileTools />
         </main>
 
-        <aside className="scroll-thin hidden w-[304px] shrink-0 overflow-y-auto border-l border-slate-200 bg-white lg:block dark:border-slate-800 dark:bg-slate-900">
+        <aside
+          className="scroll-thin hidden w-[304px] shrink-0 overflow-y-auto border-l border-slate-200 bg-white lg:block dark:border-slate-800 dark:bg-slate-900"
+          style={{ touchAction: 'pan-y' }}
+        >
           <StylePanel />
         </aside>
       </div>
@@ -139,7 +146,10 @@ export default function Editor() {
       {/* 移动端面板 */}
       <div className="lg:hidden">
         {tab !== 'none' ? (
-          <div className="scroll-thin max-h-[46vh] overflow-y-auto border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          <div
+            className="scroll-thin max-h-[46vh] overflow-y-auto border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+            style={{ touchAction: 'pan-y' }}
+          >
             {tab === 'images' ? <ImagePanel onPick={pick} /> : <StylePanel />}
           </div>
         ) : null}
