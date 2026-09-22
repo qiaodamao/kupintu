@@ -921,7 +921,11 @@ export default function CanvasStage({
 
   const boxScreen = (r: Rect) => {
     const { x, y, s } = toScreen(r.x, r.y)
-    return { left: x, top: y, width: r.w * s, height: r.h * s }
+    const w = r.w * s
+    const h = r.h * s
+    // 描边圆角跟随样式里的圆角（并换算到屏幕像素）：样式圆角为 0 时，选中框也必须是直角
+    const radius = Math.max(0, Math.min(style.radius * s, Math.min(w, h) / 2))
+    return { left: x, top: y, width: w, height: h, borderRadius: radius }
   }
 
   const hoverSlotObj = hoverSlot ? slots.find((s) => s.id === hoverSlot) : null
@@ -1011,13 +1015,13 @@ export default function CanvasStage({
 
       {hoverRect && hoverSlot !== selectedSlotId ? (
         <div
-          className="pointer-events-none absolute rounded-lg border-2 border-brand-400/80 bg-brand-400/10"
+          className="pointer-events-none absolute border-2 border-brand-400/80 bg-brand-400/10"
           style={boxScreen(hoverRect)}
         />
       ) : null}
 
       {selSlot ? (
-        <div className="pointer-events-none absolute rounded-lg border-2 border-brand-500" style={boxScreen(selSlot.rect)}>
+        <div className="pointer-events-none absolute border-2 border-brand-500" style={boxScreen(selSlot.rect)}>
           {mode === 'grid' && selSlot.placement?.imageId ? (
             <div className="pointer-events-auto absolute -top-9 left-0 flex items-center gap-1 rounded-lg bg-white/95 px-1.5 py-1 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
               <button
