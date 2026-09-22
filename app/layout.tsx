@@ -85,7 +85,7 @@ const jsonLd = {
         availability: 'https://schema.org/InStock',
       },
       featureList: [
-        '1~16 张网格布局模板',
+        '1~30 张网格布局模板',
         '横竖双向长图拼接',
         '文字 / 箭头 / 方框 / 圆圈标注',
         '间距、圆角、边距、背景自由调整',

@@ -313,8 +313,8 @@ export function StylePanel() {
     <div>
       {mode === 'grid' ? (
         <Section title="布局模板" icon={<IconGrid className="h-3.5 w-3.5 text-brand-500" />}>
-          {/* 1~16 排成两行网格：横向滚动条被隐藏后 9 以后根本看不到 */}
-          <div className="mb-3 grid grid-cols-8 gap-1">
+          {/* 1~30 排成 6 列网格（5 行）：横向滚动条被隐藏后必须换行才能全部看到 */}
+          <div className="mb-3 grid grid-cols-6 gap-1">
             {Array.from({ length: MAX_IMAGES }, (_, i) => i + 1).map((n) => (
               <button
                 key={n}

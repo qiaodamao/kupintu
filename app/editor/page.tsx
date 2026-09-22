@@ -4,7 +4,7 @@ import { SITE_NAME, SITE_URL, absUrl } from '@/lib/site'
 
 const TITLE = '在线拼图制作器 - 网格布局 · 长图拼接 · 无水印导出 - 酷拼图'
 const DESCRIPTION =
-  '免费在线拼图编辑器：上传图片即可自由拖拽，支持 1~16 张网格布局模板、横竖长图拼接，可调间距、圆角、背景与标注，一键导出 4K 高清无水印图片，免登录、图片不上传服务器。'
+  '免费在线拼图编辑器：上传图片即可自由拖拽，支持 1~30 张网格布局模板、横竖长图拼接，可调间距、圆角、背景与标注，一键导出 4K 高清无水印图片，免登录、图片不上传服务器。'
 const OG_IMAGE = '/og-image.png'
 
 export const metadata: Metadata = {

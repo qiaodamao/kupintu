@@ -1,5 +1,5 @@
 /**
- * 验证右侧「布局模板」面板的 1~16 数量按钮全部可见、可点击。
+ * 验证右侧「布局模板」面板的 1~30 数量按钮全部可见、可点击。
  * 用法：node scripts/smoke-panel-count.mjs [url] [port]
  */
 const url = process.argv[2] ?? 'http://localhost:3222/editor/'
@@ -47,10 +47,10 @@ const evaluate = async (expr) => {
 }
 const mouse = (type, x, y) => send('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1 })
 
-// 上传 12 张小图，确保 12 以内都可点
+// 上传 30 张小图，确保 1~30 全部可点
 await evaluate(`(async () => {
   const files = []
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 30; i++) {
     const c = document.createElement('canvas'); c.width = 200; c.height = 200
     const x = c.getContext('2d'); x.fillStyle = ['#ef4444','#2563eb','#22c55e'][i%3]; x.fillRect(0,0,200,200)
     const blob = await new Promise(r => c.toBlob(r,'image/png'))
@@ -63,11 +63,11 @@ await evaluate(`(async () => {
 })()`)
 await sleep(3500)
 
-// 检查 1~16 按钮的可见性：是否都在右侧栏可视范围内、宽度是否够
+// 检查 1~30 按钮的可见性：是否都在右侧栏可视范围内、宽度是否够
 const R = {}
 R.按钮布局 = await evaluate(`(() => {
   const btns = Array.from(document.querySelectorAll('button')).filter(b => /^\\d+$/.test(b.textContent.trim()) && b.className.includes('h-7'))
-  if (btns.length !== 16) return '按钮数量异常: ' + btns.length
+  if (btns.length !== 30) return '按钮数量异常: ' + btns.length
   const panel = btns[0].closest('aside')
   const pr = panel.getBoundingClientRect()
   const rows = new Map()
@@ -117,8 +117,13 @@ const clickNum = async (n) => {
 }
 
 R['点击9'] = await clickNum(9)
-R['点击12'] = await clickNum(12)
 R['点击16'] = await clickNum(16)
+R['点击30'] = await clickNum(30)
+R['格子数_点30后'] = await evaluate(`(() => {
+  const st = window.__store?.getState()
+  if (!st) return 'no store'
+  return { 叶子数: st.tree ? (function c(n){return n.kind==='leaf'?1:c(n.a)+c(n.b)})(st.tree) : null, 图片数: st.images.length }
+})()`)
 R.errors = await evaluate('window.__errs || []')
 
 console.log(JSON.stringify(R, null, 2))

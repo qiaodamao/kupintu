@@ -12,7 +12,7 @@ import type {
   StyleConfig,
   Tool,
 } from './types'
-import { DEFAULT_STYLE, DEFAULT_LONG_STYLE, BASE_W } from './types'
+import { DEFAULT_STYLE, DEFAULT_LONG_STYLE, BASE_W, MAX_IMAGES } from './types'
 import {
   cloneTree,
   collectLeaves,
@@ -21,8 +21,6 @@ import {
   setRatio as setTreeRatio,
   uid,
 } from './layout'
-
-export const MAX_IMAGES = 16
 
 const defaultTf = (): SlotTransform => ({ scale: 1, dx: 0, dy: 0 })
 
@@ -378,4 +376,4 @@ export const useEditor = create<EditorState>((set, get) => {
   }
 })
 
-export { BASE_W }
+export { BASE_W, MAX_IMAGES }

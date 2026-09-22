@@ -1,4 +1,5 @@
 import type { LayoutNode, Rect, SplitDir } from './types'
+import { MAX_IMAGES } from './types'
 
 let seed = 0
 export function uid(prefix = 'n'): string {
@@ -98,9 +99,9 @@ function signature(node: LayoutNode): string {
 
 const cache = new Map<number, Template[]>()
 
-/** 生成指定图片数量的所有布局模板（1~16） */
+/** 生成指定图片数量的所有布局模板（1~MAX_IMAGES） */
 export function genTemplates(count: number): Template[] {
-  const n = Math.max(1, Math.min(16, count))
+  const n = Math.max(1, Math.min(MAX_IMAGES, count))
   const hit = cache.get(n)
   if (hit) return hit
   const seen = new Set<string>()
