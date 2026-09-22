@@ -1,6 +1,6 @@
 # 酷拼图 · kupintu
 
-免费在线拼图 / 长图拼接 / 图片标注工具。对标 [pic.net/grid](https://www.pic.net/grid/zh/) 与 [mergeimage.org](https://mergeimage.org/zh)，
+免费在线拼图 / 长图拼接 / 图片标注工具。
 并做了功能超集：**所有处理都在浏览器本地完成，图片不上传服务器，无需登录，无水印。**
 
 ## 技术栈
