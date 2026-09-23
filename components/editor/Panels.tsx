@@ -15,6 +15,7 @@ import {
   IconCircle,
   IconDownload,
   IconGrid,
+  IconHand,
   IconImage,
   IconLayers,
   IconLong,
@@ -56,7 +57,7 @@ export function TopBar({ onExport }: { onExport: () => void }) {
   }
 
   const tools = [
-    { value: 'select' as const, label: <IconMove />, title: '选择 / 拖拽' },
+    { value: 'select' as const, label: <IconHand className="h-4 w-4" />, title: '选择 / 拖拽' },
     { value: 'text' as const, label: <IconText />, title: '文字' },
     { value: 'arrow' as const, label: <IconArrow />, title: '箭头' },
     { value: 'rect' as const, label: <IconSquare />, title: '方框' },
@@ -162,14 +163,6 @@ export function TopBar({ onExport }: { onExport: () => void }) {
         </div>
       </div>
     </header>
-  )
-}
-
-function IconMove() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <path d="M5 9V5a2 2 0 0 1 2-2h4M15 3h4a2 2 0 0 1 2 2v4M19 15v4a2 2 0 0 1-2 2h-4M9 21H5a2 2 0 0 1-2-2v-4" />
-    </svg>
   )
 }
 
@@ -471,11 +464,9 @@ export function StylePanel() {
             <Slider label="渐变角度" value={style.background.angle} min={0} max={360} onChange={(v) => setBg({ angle: v })} />
           </div>
         ) : null}
-        {style.background.type === 'transparent' ? (
-          <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-            透明背景导出 PNG 时生效；导出 JPG 会自动填充白色。
-          </p>
-        ) : null}
+        <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+          想要导出透明底的图片：导出时在「导出图片」面板勾选「透明背景」即可（会忽略这里的背景色 / 渐变）；JPG 会自动填充白色。
+        </p>
       </Section>
 
       <Section title="描边" icon={<IconSquare className="h-3.5 w-3.5 text-brand-500" />}>
@@ -594,9 +585,14 @@ export function ExportDialog({
             />
           ) : null}
 
-          {format === 'png' ? (
-            <Switch label="透明背景" checked={transparent} onChange={setTransparent} />
-          ) : null}
+          {format === 'jpeg' ? null : (
+            <div className="space-y-1">
+              <Switch label="透明背景" checked={transparent} onChange={setTransparent} />
+              <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                勾选后导出不带背景（忽略背景色 / 渐变）；JPG 会自动填充白色。
+              </p>
+            </div>
+          )}
 
           <Button variant="primary" size="lg" className="w-full" onClick={run} disabled={busy}>
             <IconDownload className="h-4 w-4" />

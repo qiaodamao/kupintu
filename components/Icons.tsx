@@ -132,9 +132,13 @@ export const IconChevron = (p: P) => (
     <path d="M6 9l6 6 6-6" />
   </svg>
 )
-export const IconMove = (p: P) => (
+/** 张开的手掌（grab）：用于「选择 / 拖拽」工具，与画布拖动时的 grab 光标语义一致 */
+export const IconHand = (p: P) => (
   <svg {...base(p)}>
-    <path d="M5 9V5a2 2 0 0 1 2-2h4M15 3h4a2 2 0 0 1 2 2v4M19 15v4a2 2 0 0 1-2 2h-4M9 21H5a2 2 0 0 1-2-2v-4" />
+    <path d="M18 11V6a2 2 0 0 0-4 0v1" />
+    <path d="M14 10V4a2 2 0 0 0-4 0v4" />
+    <path d="M10 10.5V6a2 2 0 0 0-4 0v6" />
+    <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
   </svg>
 )
 export const IconPalette = (p: P) => (

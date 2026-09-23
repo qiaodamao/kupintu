@@ -36,9 +36,10 @@ export interface DrawOptions {
   transparent?: boolean
 }
 
-export function roundRectPath(ctx: CanvasRenderingContext2D, r: Rect, radius: number) {
+/** sub=true 时不调用 beginPath，用于把圆角矩形追加为当前路径的子路径（evenodd 裁剪用） */
+export function roundRectPath(ctx: CanvasRenderingContext2D, r: Rect, radius: number, sub = false) {
   const rad = Math.max(0, Math.min(radius, Math.min(r.w, r.h) / 2))
-  ctx.beginPath()
+  if (!sub) ctx.beginPath()
   if (typeof ctx.roundRect === 'function') {
     ctx.roundRect(r.x, r.y, r.w, r.h, rad)
   } else {
@@ -88,8 +89,10 @@ export function annotationBounds(ctx: CanvasRenderingContext2D, a: Annotation): 
 function drawBackground(ctx: CanvasRenderingContext2D, o: DrawOptions) {
   const { style, width, height, transparent } = o
   const bg = style.background
+  // 导出勾选「透明背景」时优先级最高：不管样式背景是纯色 / 渐变 / 透明，都不铺底
+  // （调用方只会给支持 alpha 的格式传 transparent，JPG 仍走下面填白）
+  if (transparent) return
   if (bg.type === 'transparent') {
-    if (transparent) return
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, width, height)
     return
@@ -144,6 +147,14 @@ function drawImageSlot(ctx: CanvasRenderingContext2D, o: DrawOptions, slot: Slot
   const tf: SlotTransform = p?.tf ?? { scale: 1, dx: 0, dy: 0 }
   if (style.shadow) {
     ctx.save()
+    if (o.transparent) {
+      // 透明导出：阴影衬底会露出白色，所以把绘制范围裁到圆角矩形「之外」（evenodd），
+      // 只让投影落在图片外侧，衬底本身不会盖住图片（透明 PNG 才不会变白底）
+      ctx.beginPath()
+      ctx.rect(0, 0, o.width, o.height)
+      roundRectPath(ctx, r, style.radius, true)
+      ctx.clip('evenodd')
+    }
     ctx.shadowColor = 'rgba(15,23,42,0.28)'
     ctx.shadowBlur = 18
     ctx.shadowOffsetY = 8

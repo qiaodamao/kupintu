@@ -42,7 +42,8 @@ export async function renderToBlob(
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('无法创建画布上下文')
   ctx.scale(scale, scale)
-  drawScene(ctx, { ...scene, scale, transparent: opts.transparent && opts.format === 'png' })
+  // JPEG 没有 alpha 通道，只能填白；PNG / WebP 支持透明
+  drawScene(ctx, { ...scene, scale, transparent: opts.transparent && opts.format !== 'jpeg' })
   const mime = opts.format === 'png' ? 'image/png' : opts.format === 'webp' ? 'image/webp' : 'image/jpeg'
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, mime, opts.quality))
   if (!blob) throw new Error('导出失败，请尝试降低分辨率')

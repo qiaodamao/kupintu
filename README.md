@@ -37,6 +37,11 @@
 - 导出 PNG / JPG / WebP，1x / 2x / 3x / 4K，JPG/WebP 可调画质，PNG 支持透明背景
 - 导出分辨率与预览完全一致（同一 `drawScene`，仅整体缩放倍率不同）
 
+**PWA**
+- 可安装到主屏幕 / 桌面（standalone），manifest 由 `app/manifest.ts` 生成
+- Service Worker（`public/sw.js`）：预缓存首页 / 编辑器 / 离线页；带 hash 的静态资源 cache-first；页面导航 network-first，断网回退缓存副本或 `/offline/`
+- 仅生产构建注册 SW（`PWARegister.tsx`），dev 下不注册以免干扰热更新
+
 ## 本地开发
 
 ```bash
@@ -116,6 +121,7 @@ components/
   ui.tsx              基础控件（Button / Slider / Segmented / Switch / ColorPicker…）
   Icons.tsx           内联 SVG 图标
   Logo.tsx            站点 Logo（复用 app/icon.svg → /icon.svg）
+  ../public/apple-touch-icon.png  iOS 添加到主屏幕图标（180×180，由 logo 生成，layout.tsx metadata.icons.apple 引用）
 lib/
   types.ts            数据模型与常量（逻辑画布基准宽 BASE_W = 1200）
   layout.ts           布局模板生成、矩形计算、分割线命中、比例修改
@@ -136,7 +142,10 @@ scripts/
   smoke-mobile-header.mjs    顶栏在 320/390/768/1024 断点无溢出、按钮可见
   smoke-selection-radius.mjs 选中/悬停描边圆角跟随「圆角」样式（0 时必须是直角）
   smoke-dark-mode.mjs        深色模式下品牌芯片的底色亮度与文字对比度
+  smoke-transparent-export.mjs 勾选「透明背景」后导出画布的像素 alpha（含 JPG 填白、阴影不露白）
   smoke-seo.mjs              canonical / OG / Twitter / JSON-LD 结构化数据
+  smoke-pwa.mjs              manifest / 图标 / SW 注册 / CDP 模拟断网后页面可用
+  gen-pwa-icons.mjs          由 logo 生成 PWA / iOS 的 PNG 图标（换 logo 后重跑一次）
 ```
 
 ## 实现要点

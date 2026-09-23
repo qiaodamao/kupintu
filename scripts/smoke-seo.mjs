@@ -68,6 +68,10 @@ const PROBE = `(() => {
   const abs = (u) => { try { return new URL(u, location.href).href } catch { return u } }
   const meta = (sel) => document.querySelector(sel)?.getAttribute('content') ?? null
   const links = Array.from(document.querySelectorAll('link[rel=canonical]')).map((l) => abs(l.getAttribute('href')))
+  const appleIcon = document.querySelector('link[rel="apple-touch-icon"]')
+  const appleIconAttrs = appleIcon
+    ? { href: appleIcon.getAttribute('href'), sizes: appleIcon.getAttribute('sizes'), type: appleIcon.getAttribute('type') }
+    : null
   const ld = Array.from(document.querySelectorAll('script[type="application/ld+json"]')).map((s) => {
     try { return { ok: true, data: JSON.parse(s.textContent) } } catch (e) { return { ok: false, err: String(e.message) } }
   })
@@ -81,6 +85,7 @@ const PROBE = `(() => {
     desc: meta('meta[name=description]'),
     keywords: (meta('meta[name=keywords]') || '').slice(0, 40) + '…',
     canonical: links,
+    appleIcon: appleIconAttrs,
     og: {
       title: meta('meta[property="og:title"]'),
       description: meta('meta[property="og:description"]'),
@@ -118,6 +123,15 @@ async function probePage(path, expect) {
   console.log('  title:', r.title)
   check(r.canonical.length === 1, 'canonical 唯一', r.canonical.join(','))
   check(r.canonical[0] === expect.canonical, 'canonical 指向正确', r.canonical[0])
+  check(!!r.appleIcon, 'apple-touch-icon link 存在')
+  if (r.appleIcon) {
+    check(
+      new URL(r.appleIcon.href, base).pathname === '/apple-touch-icon.png',
+      'apple-touch-icon 指向 /apple-touch-icon.png',
+      r.appleIcon.href,
+    )
+    check(r.appleIcon.sizes === '180x180', 'apple-touch-icon sizes=180x180', r.appleIcon.sizes)
+  }
   check(
     !!r.og.url && r.og.url.startsWith(SITE),
     'og:url 为绝对域名',

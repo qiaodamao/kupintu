@@ -72,7 +72,7 @@ const FAQS = [
   },
   {
     q: '支持哪些图片格式？',
-    a: '上传支持 JPG、PNG、WebP、GIF 等常见格式；导出支持 PNG、JPG、WebP，其中 PNG 支持透明背景。',
+    a: '上传支持 JPG、PNG、WebP、GIF 等常见格式；导出支持 PNG、JPG、WebP，其中 PNG 与 WebP 支持透明背景（导出面板勾选「透明背景」即可）。',
   },
   {
     q: '最多可以拼多少张图？',
@@ -114,26 +114,30 @@ function ThemeToggle() {
 
 function HeroPreview() {
   return (
-    <div className="relative mx-auto w-full max-w-md">
+    <div className="relative ml-auto w-full max-w-lg">
       <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-tr from-brand-200 via-fuchsia-200 to-amber-200 opacity-60 blur-2xl dark:opacity-25" />
-      <div className="grid aspect-square grid-cols-4 grid-rows-4 gap-2 rounded-2xl bg-white p-3 shadow-2xl ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
-        <div className="col-span-2 row-span-2 rounded-lg bg-gradient-to-br from-indigo-400 to-violet-500" />
-        <div className="col-span-2 rounded-lg bg-gradient-to-br from-sky-300 to-cyan-400" />
-        <div className="rounded-lg bg-gradient-to-br from-amber-300 to-orange-400" />
-        <div className="rounded-lg bg-gradient-to-br from-rose-300 to-pink-400" />
-        <div className="col-span-2 row-span-2 rounded-lg bg-gradient-to-br from-emerald-300 to-teal-400" />
-        <div className="rounded-lg bg-gradient-to-br from-fuchsia-300 to-purple-400" />
-        <div className="rounded-lg bg-gradient-to-br from-slate-300 to-slate-400" />
-        <div className="col-span-2 rounded-lg bg-gradient-to-br from-lime-300 to-green-400" />
-      </div>
-      <div className="absolute -bottom-4 -right-3 rounded-xl bg-white px-3 py-2 text-xs font-medium shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-        <span className="mr-1 inline-flex gap-0.5 align-middle">
-          <IconText className="h-3.5 w-3.5 text-brand-500" />
-          <IconArrow className="h-3.5 w-3.5 text-rose-500" />
-          <IconSquare className="h-3.5 w-3.5 text-emerald-500" />
-          <IconCircle className="h-3.5 w-3.5 text-amber-500" />
-        </span>
-        文字 · 箭头 · 方框 · 圆圈
+      <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
+        <div className="grid aspect-square grid-cols-4 grid-rows-4 gap-2">
+          <div className="col-span-2 row-span-2 rounded-lg bg-gradient-to-br from-indigo-400 to-violet-500" />
+          <div className="col-span-2 rounded-lg bg-gradient-to-br from-sky-300 to-cyan-400" />
+          <div className="rounded-lg bg-gradient-to-br from-amber-300 to-orange-400" />
+          <div className="rounded-lg bg-gradient-to-br from-rose-300 to-pink-400" />
+          <div className="col-span-2 row-span-2 rounded-lg bg-gradient-to-br from-emerald-300 to-teal-400" />
+          <div className="rounded-lg bg-gradient-to-br from-fuchsia-300 to-purple-400" />
+          <div className="rounded-lg bg-gradient-to-br from-slate-300 to-slate-400" />
+          <div className="col-span-2 rounded-lg bg-gradient-to-br from-lime-300 to-green-400" />
+        </div>
+        <div className="mt-3 flex justify-center">
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
+            <span className="inline-flex gap-0.5">
+              <IconText className="h-3.5 w-3.5 text-brand-500" />
+              <IconArrow className="h-3.5 w-3.5 text-rose-500" />
+              <IconSquare className="h-3.5 w-3.5 text-emerald-500" />
+              <IconCircle className="h-3.5 w-3.5 text-amber-500" />
+            </span>
+            文字 · 箭头 · 方框 · 圆圈
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -177,7 +181,7 @@ export default function Home() {
       />
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-3 sm:px-4">
+        <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-3 sm:gap-3 sm:px-4">
           <span className="flex shrink-0 items-center gap-2">
             <Logo className="h-[30px] w-[30px] shrink-0 rounded-lg sm:h-7 sm:w-7" />
             <span className="text-[15px] font-semibold tracking-tight">酷拼图</span>
@@ -203,7 +207,7 @@ export default function Home() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(99,102,241,0.12),transparent)]" />
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
           <div className="flex flex-col justify-center">
             <span className="mb-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 dark:bg-brand-950 dark:text-brand-300">
               <IconShield className="h-3.5 w-3.5" />
@@ -243,7 +247,7 @@ export default function Home() {
 
       {/* Features */}
       <section id="features" className="scroll-mt-16 border-t border-slate-100 bg-slate-50/60 py-16 dark:border-slate-800 dark:bg-slate-900/40">
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-7xl px-4">
           <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">超越传统拼图的全能画布</h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             不只是把图片摆在一起 —— 布局、长图、标注、样式、导出，一条链路全部搞定。
@@ -267,7 +271,7 @@ export default function Home() {
 
       {/* Steps */}
       <section id="steps" className="scroll-mt-16 py-16">
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-7xl px-4">
           <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">三步做出一张好拼图</h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((s) => (
@@ -285,7 +289,7 @@ export default function Home() {
 
       {/* Scenes */}
       <section id="scenes" className="scroll-mt-16 border-t border-slate-100 bg-slate-50/60 py-16 dark:border-slate-800 dark:bg-slate-900/40">
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-7xl px-4">
           <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">这些场景，它都能搞定</h2>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {SCENES.map((s) => (
@@ -358,7 +362,7 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-slate-200 py-8 dark:border-slate-800">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 text-xs text-slate-500 sm:flex-row dark:text-slate-400">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 text-xs text-slate-500 sm:flex-row dark:text-slate-400">
           <span>© {new Date().getFullYear()} 酷拼图 · 免费在线拼图工具</span>
           <span className="flex items-center gap-4">
             <a href="/editor/" className="hover:text-brand-600">编辑器</a>

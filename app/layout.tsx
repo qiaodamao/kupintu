@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { SITE_NAME, SITE_URL, absUrl } from '@/lib/site'
+import PWARegister from '@/components/PWARegister'
 
 const TITLE = '免费在线拼图工具 - 自由布局与长图拼接 - 酷拼图'
 const DESCRIPTION =
@@ -19,6 +20,9 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   alternates: { canonical: '/' },
   robots: { index: true, follow: true },
+  icons: {
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
@@ -42,6 +46,14 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     images: [OG_IMAGE],
   },
+  // PWA：manifest 由 app/manifest.ts 生成 → /manifest.webmanifest
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    title: SITE_NAME,
+    statusBarStyle: 'default',
+  },
+  formatDetection: { telephone: false },
 }
 
 export const viewport: Viewport = {
@@ -118,6 +130,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-white text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
         {children}
+        <PWARegister />
       </body>
     </html>
   )
