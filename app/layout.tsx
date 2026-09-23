@@ -20,7 +20,14 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   alternates: { canonical: '/' },
   robots: { index: true, follow: true },
+  // 只配 apple-touch-icon 时浏览器拿不到 rel="icon"，会退回去请求 /favicon.ico 并 404 → 标签页没有图标。
+  // 这里显式给出：SVG 优先（矢量清晰），PNG 给不支持 SVG favicon 的浏览器兜底。
   icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   openGraph: {

@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Background, ImageAsset, StyleConfig } from '@/lib/types'
-import { MAX_IMAGES, useEditor } from '@/lib/store'
+import type { Background, ImageAsset, LongDirection, StyleConfig } from '@/lib/types'
+import { MAX_IMAGES, MAX_LONG_COLS, useEditor } from '@/lib/store'
 import { computeRects, countLeaves, genTemplates } from '@/lib/layout'
 import type { LayoutNode } from '@/lib/types'
 import { longLayout } from '@/lib/render'
@@ -30,6 +30,7 @@ import {
   IconTrash,
   IconUndo,
   IconUpload,
+  IconX,
 } from '@/components/Icons'
 import Logo from '@/components/Logo'
 
@@ -168,18 +169,83 @@ export function TopBar({ onExport }: { onExport: () => void }) {
 
 /* ------------------------------ 左：图片 ------------------------------ */
 
+/**
+ * 排序拖拽时每项的纵向位移：
+ * - 被拖的那张直接滑到落点位置（target = slot > from ? slot - 1 : slot）
+ * - 顺移方向上的其它项整体让开一格，于是落点处自然空出一条缝
+ * 全部用 transform，不触发重排，拖起来很顺。
+ */
+function dragOffset(i: number, from: number, slot: number, step: number): number {
+  if (i === from) {
+    const target = slot > from ? slot - 1 : slot
+    return (target - from) * step
+  }
+  if (slot > from && i > from && i <= slot - 1) return -step
+  if (slot < from && i >= slot && i < from) return step
+  return 0
+}
+
 export function ImagePanel({ onPick }: { onPick: (files: File[]) => void }) {
   const images = useEditor((s) => s.images)
+  const mode = useEditor((s) => s.mode)
   const removeImage = useEditor((s) => s.removeImage)
   const clearImages = useEditor((s) => s.clearImages)
   const reorderImages = useEditor((s) => s.reorderImages)
   const inputRef = useRef<HTMLInputElement>(null)
-  const dragIndex = useRef<number | null>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+  // 拖动开始时快照每项的原始位置：之后换算插入位置必须用未位移的坐标，
+  // 否则元素一让开，命中判定又跟着变，会出现来回抖动。
+  const dragGeo = useRef<{ from: number; tops: number[]; heights: number[]; scrollTop: number } | null>(null)
+  const [dragView, setDragView] = useState<{ from: number; slot: number; step: number } | null>(null)
 
   // 只负责收集文件并交给父组件，避免与 onPick 重复添加
   const pick = (files: FileList | null) => {
     if (!files?.length) return
     onPick(Array.from(files))
+  }
+
+  const beginDrag = (e: React.DragEvent<HTMLLIElement>, i: number, id: string) => {
+    const items = listRef.current?.querySelectorAll('li')
+    const tops: number[] = []
+    const heights: number[] = []
+    let step = 0
+    items?.forEach((el, k) => {
+      const r = el.getBoundingClientRect()
+      tops.push(r.top)
+      heights.push(r.height)
+      if (k === 1) step = r.top - (items[0]?.getBoundingClientRect().top ?? 0)
+    })
+    dragGeo.current = { from: i, tops, heights, scrollTop: listRef.current?.scrollTop ?? 0 }
+    setDragView({ from: i, slot: i, step: step || 60 })
+    e.dataTransfer.setData('application/x-kupintu-image', id)
+    e.dataTransfer.setData('text/plain', id)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  /** 光标纵坐标 → 插入槽位（0..n，n 表示放到最后） */
+  const slotAt = (clientY: number): number => {
+    const g = dragGeo.current
+    if (!g) return 0
+    const scrolled = (listRef.current?.scrollTop ?? 0) - g.scrollTop
+    for (let k = 0; k < g.tops.length; k++) {
+      const top = g.tops[k] - scrolled
+      if (clientY < top + g.heights[k] / 2) return k
+    }
+    return g.tops.length
+  }
+
+  const endDrag = () => {
+    dragGeo.current = null
+    setDragView(null)
+  }
+
+  const moveTo = (slot: number) => {
+    const g = dragGeo.current
+    if (!g) return
+    const from = g.from
+    const to = slot > from ? slot - 1 : slot
+    if (to !== from && to >= 0 && to < images.length) reorderImages(from, to)
+    endDrag()
   }
 
   return (
@@ -190,6 +256,8 @@ export function ImagePanel({ onPick }: { onPick: (files: File[]) => void }) {
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
             e.preventDefault()
+            // 从素材列表拖进来的（自带图片 id，且浏览器会附一份 file），不能再当新文件上传
+            if (e.dataTransfer.getData('application/x-kupintu-image')) return
             pick(e.dataTransfer.files)
           }}
           className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/60 py-6 text-center transition-colors hover:border-brand-400 hover:bg-brand-50/50 dark:border-slate-700 dark:bg-slate-800/40"
@@ -225,24 +293,51 @@ export function ImagePanel({ onPick }: { onPick: (files: File[]) => void }) {
         {images.length === 0 ? (
           <p className="py-4 text-center text-xs text-slate-400">还没有图片，先上传几张吧</p>
         ) : (
-          <ul className="scroll-thin max-h-[42vh] space-y-1.5 overflow-y-auto pr-1 lg:max-h-none lg:flex-1">
-            {images.map((img, i) => (
+          <ul
+            ref={listRef}
+            className="scroll-thin max-h-[42vh] space-y-1.5 overflow-y-auto pr-1 lg:max-h-none lg:flex-1"
+            onDragOver={(e) => {
+              if (!dragGeo.current) {
+                // 外部文件拖到列表上：只阻止浏览器默认打开，交给上面的上传区处理
+                if (e.dataTransfer.types.includes('Files')) e.preventDefault()
+                return
+              }
+              e.preventDefault()
+              e.dataTransfer.dropEffect = 'move'
+              const slot = slotAt(e.clientY)
+              setDragView((d) => (d && d.slot !== slot ? { ...d, slot } : d))
+            }}
+            onDrop={(e) => {
+              if (!dragGeo.current) {
+                e.preventDefault()
+                return
+              }
+              e.preventDefault()
+              moveTo(slotAt(e.clientY))
+            }}
+          >
+            {images.map((img, i) => {
+              const offset = dragView ? dragOffset(i, dragView.from, dragView.slot, dragView.step) : 0
+              const dragging = dragView?.from === i
+              return (
               <li
                 key={img.id}
                 draggable
-                onDragStart={(e) => {
-                  dragIndex.current = i
-                  e.dataTransfer.setData('application/x-kupintu-image', img.id)
-                  e.dataTransfer.effectAllowed = 'move'
+                onDragStart={(e) => beginDrag(e, i, img.id)}
+                onDragEnd={endDrag}
+                style={{
+                  transform: offset ? `translateY(${offset}px)` : undefined,
+                  // 让开的项与被拖的项同步位移，视觉上就是「中间撑开一条缝」
+                  transition:
+                    'transform 160ms cubic-bezier(0.2, 0, 0, 1), box-shadow 160ms, border-color 160ms',
+                  zIndex: dragging ? 20 : undefined,
                 }}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault()
-                  const from = dragIndex.current
-                  if (from !== null && from !== i) reorderImages(from, i)
-                  dragIndex.current = null
-                }}
-                className="group flex cursor-grab items-center gap-2 rounded-lg border border-slate-200 bg-white p-1.5 active:cursor-grabbing dark:border-slate-700 dark:bg-slate-800"
+                className={cn(
+                  'group relative flex cursor-grab items-center gap-2 rounded-lg border p-1.5 active:cursor-grabbing',
+                  dragging
+                    ? 'border-brand-400 bg-white shadow-lg ring-2 ring-brand-300 dark:border-brand-500 dark:bg-slate-800'
+                    : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800',
+                )}
               >
                 <span className="w-4 shrink-0 text-center font-mono text-[10px] text-slate-400">{i + 1}</span>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -261,11 +356,13 @@ export function ImagePanel({ onPick }: { onPick: (files: File[]) => void }) {
                   <IconTrash className="h-3.5 w-3.5" />
                 </button>
               </li>
-            ))}
+              )
+            })}
           </ul>
         )}
         <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
-          拖动缩略图可调整顺序；拖到画布上的格子即可替换图片。
+          拖动缩略图排序，中间的图会自动让开
+          {mode === 'long' ? '；也可直接拖到画布上，放到拼接条里的指定位置。' : '；拖到画布上的格子即可替换图片。'}
         </p>
       </Section>
     </div>
@@ -283,6 +380,70 @@ const RATIOS = [
   { label: '16:9', value: 16 / 9 },
   { label: '9:16', value: 9 / 16 },
 ]
+
+/* --------------------- 长图拼接：布局模板 --------------------- */
+
+const LONG_GROUPS: Array<{ dir: LongDirection; label: string; hint: string }> = [
+  { dir: 'vertical', label: '竖向拼接', hint: '每排 N 张 · 逐排向下延伸' },
+  { dir: 'horizontal', label: '横向拼接', hint: '每列 N 张 · 逐列向右延伸' },
+]
+
+const LONG_COLS = Array.from({ length: MAX_LONG_COLS }, (_, i) => i + 1)
+
+function FlowArrow({ dir }: { dir: LongDirection }) {
+  return dir === 'vertical' ? (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-3 w-3"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 4 L12 20" />
+      <path d="M7 15 L12 20 L17 15" />
+    </svg>
+  ) : (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-3 w-3"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 12 L20 12" />
+      <path d="M15 7 L20 12 L15 17" />
+    </svg>
+  )
+}
+
+/** 缩略预览：竖向画 N 列 × 2 排，横向画 2 列 × N 排，一眼看出排布方向 */
+function LongTemplatePreview({ dir, cols, active }: { dir: LongDirection; cols: number; active: boolean }) {
+  // 列数多时把辅助方向压到 1 格、间距收窄，否则小方块会挤成一条看不清
+  const cross = cols >= 5 ? 1 : 2
+  const c = dir === 'vertical' ? cols : cross
+  const r = dir === 'vertical' ? cross : cols
+  return (
+    <span
+      className={cn(
+        'grid h-9 w-full rounded-[3px] p-[2px]',
+        cols >= 5 ? 'gap-[1px]' : 'gap-[2px]',
+        active ? 'bg-brand-100 dark:bg-brand-950' : 'bg-slate-100 dark:bg-slate-700',
+      )}
+      style={{ gridTemplateColumns: `repeat(${c}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${r}, minmax(0, 1fr))` }}
+    >
+      {Array.from({ length: c * r }, (_, i) => (
+        <span
+          key={i}
+          className={cn('rounded-[1px]', active ? 'bg-brand-500' : 'bg-slate-300 dark:bg-slate-500')}
+        />
+      ))}
+    </span>
+  )
+}
 
 const GRADIENTS: Array<[string, string]> = [
   ['#a78bfa', '#f472b6'],
@@ -316,6 +477,11 @@ export function StylePanel() {
   const style = useEditor((s) => s.style)
   const tree = useEditor((s) => s.tree)
   const images = useEditor((s) => s.images)
+  const longDir = useEditor((s) => s.longDir)
+  const longCols = useEditor((s) => s.longCols)
+  const longMasonry = useEditor((s) => s.longMasonry)
+  const setLongLayout = useEditor((s) => s.setLongLayout)
+  const setLongMasonry = useEditor((s) => s.setLongMasonry)
   const updateStyle = useEditor((s) => s.updateStyle)
   const applyTemplate = useEditor((s) => s.applyTemplate)
   const ensureTemplate = useEditor((s) => s.ensureTemplate)
@@ -366,11 +532,65 @@ export function StylePanel() {
           </Button>
         </Section>
       ) : (
-        <Section title="拼接设置" icon={<IconLong className="h-3.5 w-3.5 text-brand-500" />}>
-          <p className="mb-2 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-            长图模式按左侧图片顺序依次拼接，拖动左侧缩略图即可调整顺序；画布尺寸自动计算，不受比例限制。
+        <Section title="布局模板" icon={<IconLong className="h-3.5 w-3.5 text-brand-500" />}>
+          <p className="mb-3 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+            按左侧图片顺序依次拼接，拖动缩略图即可调整顺序；画布尺寸自动计算，不受比例限制。
           </p>
-          <Button size="sm" variant="ghost" className="w-full" onClick={resetTransforms}>
+          <div className="space-y-3">
+            {LONG_GROUPS.map((g) => (
+              <div key={g.dir}>
+                <div className="mb-1.5 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                  <span className="flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
+                    <FlowArrow dir={g.dir} />
+                    {g.label}
+                  </span>
+                  <span className="text-slate-400">· {g.hint}</span>
+                </div>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {LONG_COLS.map((n) => {
+                    const active = longDir === g.dir && longCols === n
+                    return (
+                      <button
+                        key={n}
+                        onClick={() => setLongLayout(g.dir, n)}
+                        title={`${g.label} · ${g.dir === 'vertical' ? `每排 ${n} 张` : `每列 ${n} 张`}`}
+                        className={cn(
+                          'rounded-md border p-1 transition',
+                          active
+                            ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/60'
+                            : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800',
+                        )}
+                      >
+                        <LongTemplatePreview dir={g.dir} cols={n} active={active} />
+                        <span
+                          className={cn(
+                            'mt-1 block text-center text-[10px]',
+                            active ? 'font-medium text-brand-700 dark:text-brand-300' : 'text-slate-500 dark:text-slate-400',
+                          )}
+                        >
+                          {n} 列
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 space-y-1">
+            <Switch
+              label="瀑布流排列"
+              checked={longMasonry}
+              onChange={setLongMasonry}
+              disabled={longCols <= 1}
+            />
+            <p className="text-[11px] leading-relaxed text-slate-400">
+              {longCols <= 1
+                ? '单列 / 单行时排列方式相同，选择 2 列及以上可用。'
+                : '开启后每张图自动填入当前最短的一列（竖向）/ 一行（横向），图与图之间的间距保持一致；关闭则按排 / 列对齐居中。'}
+            </p>
+          </div>
+          <Button size="sm" variant="ghost" className="mt-3 w-full" onClick={resetTransforms}>
             <IconSparkles className="h-3.5 w-3.5" />
             重置图片缩放与偏移
           </Button>
@@ -541,8 +761,13 @@ export function ExportDialog({
             <IconDownload className="h-4 w-4 text-brand-500" />
             导出图片
           </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-            关闭
+          <button
+            onClick={onClose}
+            title="关闭"
+            aria-label="关闭"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            <IconX className="h-5 w-5" strokeWidth={2.4} />
           </button>
         </div>
 
@@ -643,6 +868,8 @@ export function longPreviewSize(
   images: Record<string, ImageAsset>,
   style: StyleConfig,
   dir: 'vertical' | 'horizontal',
+  cols = 1,
+  masonry = false,
 ) {
-  return longLayout(order, images, style, dir, {})
+  return longLayout(order, images, style, dir, {}, cols, masonry)
 }

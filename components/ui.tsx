@@ -141,15 +141,21 @@ export function Switch({
   checked,
   onChange,
   label,
+  disabled,
 }: {
   checked: boolean
   onChange: (v: boolean) => void
   label: string
+  disabled?: boolean
 }) {
   return (
     <button
-      onClick={() => onChange(!checked)}
-      className="flex w-full items-center justify-between text-xs text-slate-600 dark:text-slate-300"
+      disabled={disabled}
+      onClick={() => (disabled ? undefined : onChange(!checked))}
+      className={cn(
+        'flex w-full items-center justify-between text-xs text-slate-600 dark:text-slate-300',
+        disabled && 'cursor-not-allowed opacity-50',
+      )}
     >
       <span>{label}</span>
       <span

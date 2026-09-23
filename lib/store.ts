@@ -12,7 +12,7 @@ import type {
   StyleConfig,
   Tool,
 } from './types'
-import { DEFAULT_STYLE, DEFAULT_LONG_STYLE, BASE_W, MAX_IMAGES } from './types'
+import { DEFAULT_STYLE, DEFAULT_LONG_STYLE, BASE_W, MAX_IMAGES, MAX_LONG_COLS } from './types'
 import {
   cloneTree,
   collectLeaves,
@@ -23,6 +23,8 @@ import {
 } from './layout'
 
 const defaultTf = (): SlotTransform => ({ scale: 1, dx: 0, dy: 0 })
+
+const clampCols = (n: number) => Math.max(1, Math.min(MAX_LONG_COLS, Math.round(n) || 1))
 
 /** 两种模式各自记住一份样式，切换时互不覆盖（长图默认 zero padding/radius） */
 const styleByMode: Record<EditorMode, StyleConfig> = {
@@ -40,6 +42,10 @@ interface Snapshot {
 export interface EditorState {
   mode: EditorMode
   longDir: LongDirection
+  /** 长图拼接每行 / 每列的图片数（竖向=每行几张，横向=每列几张） */
+  longCols: number
+  /** 长图拼接瀑布流：每张图填入当前最短的一列 / 一行，间距保持一致 */
+  longMasonry: boolean
   tool: Tool
   images: ImageAsset[]
   tree: LayoutNode
@@ -53,11 +59,17 @@ export interface EditorState {
 
   setMode: (mode: EditorMode) => void
   setLongDir: (dir: LongDirection) => void
+  setLongCols: (cols: number) => void
+  setLongMasonry: (on: boolean) => void
+  /** 一次点击同时切换拼接方向与列数（侧栏布局模板用） */
+  setLongLayout: (dir: LongDirection, cols: number) => void
   setTool: (tool: Tool) => void
   addFiles: (files: File[]) => Promise<void>
   removeImage: (id: string) => void
   clearImages: () => void
   reorderImages: (from: number, to: number) => void
+  /** 长图拼接：交换两张图在拼接条里的位置（a / b 为图片 id） */
+  swapImages: (a: string, b: string) => void
   applyTemplate: (tree: LayoutNode) => void
   ensureTemplate: (count: number) => void
   setRatio: (id: string, ratio: number) => void
@@ -145,6 +157,8 @@ export const useEditor = create<EditorState>((set, get) => {
   return {
     mode: 'grid',
     longDir: 'vertical',
+    longCols: 1,
+    longMasonry: false,
     tool: 'select',
     images: [],
     tree: initialTree(1),
@@ -177,6 +191,9 @@ export const useEditor = create<EditorState>((set, get) => {
       }
     },
     setLongDir: (longDir) => set({ longDir }),
+    setLongCols: (longCols) => set({ longCols: clampCols(longCols) }),
+    setLongMasonry: (longMasonry) => set({ longMasonry }),
+    setLongLayout: (longDir, longCols) => set({ longDir, longCols: clampCols(longCols) }),
     setTool: (tool) => set({ tool, selectedAnnoId: tool === 'select' ? get().selectedAnnoId : null }),
 
     addFiles: async (files) => {
@@ -246,6 +263,19 @@ export const useEditor = create<EditorState>((set, get) => {
       const [item] = images.splice(from, 1)
       if (!item) return
       images.splice(to, 0, item)
+      commit({ images })
+    },
+
+    swapImages: (a, b) => {
+      const s = get()
+      if (a === b) return
+      const ia = s.images.findIndex((i) => i.id === a)
+      const ib = s.images.findIndex((i) => i.id === b)
+      if (ia < 0 || ib < 0) return
+      const images = [...s.images]
+      const tmp = images[ia]
+      images[ia] = images[ib]
+      images[ib] = tmp
       commit({ images })
     },
 
@@ -381,4 +411,4 @@ export const useEditor = create<EditorState>((set, get) => {
   }
 })
 
-export { BASE_W, MAX_IMAGES }
+export { BASE_W, MAX_IMAGES, MAX_LONG_COLS }

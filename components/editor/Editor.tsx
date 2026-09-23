@@ -17,6 +17,8 @@ export default function Editor() {
   const images = useEditor((s) => s.images)
   const annotations = useEditor((s) => s.annotations)
   const longDir = useEditor((s) => s.longDir)
+  const longCols = useEditor((s) => s.longCols)
+  const longMasonry = useEditor((s) => s.longMasonry)
   const addFiles = useEditor((s) => s.addFiles)
   const tool = useEditor((s) => s.tool)
 
@@ -52,8 +54,8 @@ export default function Editor() {
   }, [])
 
   const long = useMemo<LongLayout>(
-    () => longLayout(order, imageMap, style, longDir, placements),
-    [order, imageMap, style, longDir, placements],
+    () => longLayout(order, imageMap, style, longDir, placements, longCols, longMasonry),
+    [order, imageMap, style, longDir, placements, longCols, longMasonry],
   )
 
   const size = useMemo(

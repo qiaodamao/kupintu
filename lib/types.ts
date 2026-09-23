@@ -127,6 +127,9 @@ export interface Scene {
 /** 布局模式单画布最多支持的图片数（长图拼接不受此限制） */
 export const MAX_IMAGES = 30
 
+/** 长图拼接每行 / 每列最多容纳的图片数（1 = 原来的单排拼接） */
+export const MAX_LONG_COLS = 8
+
 export const DEFAULT_STYLE: StyleConfig = {
   gap: 12,
   padding: 16,

@@ -1,4 +1,4 @@
-import { BASE_W, FONT_STACK } from './types'
+import { BASE_W, FONT_STACK, MAX_LONG_COLS } from './types'
 import type {
   Annotation,
   ArrowAnnotation,
@@ -307,13 +307,21 @@ export interface LongLayout {
   slots: Slot[]
 }
 
-/** 长图拼接：横向按高度对齐，纵向按宽度对齐 */
+/**
+ * 长图拼接
+ * - vertical（竖向）：宽度固定，每排 cols 张、逐排向下延伸；同一排按「最高的一张」对齐，其余垂直居中
+ * - horizontal（横向）：高度固定，每列 cols 张、逐列向右延伸；同一列按「最宽的一张」对齐，其余水平居中
+ * - masonry = true 时改为瀑布流：每张图填入当前最短的一列 / 一行，图与图之间间距始终一致
+ * cols = 1 时即原来的单排 / 单列拼接（此时瀑布流与常规结果相同）
+ */
 export function longLayout(
   order: string[],
   images: Record<string, ImageAsset>,
   style: StyleConfig,
   dir: LongDirection,
   placements: Record<string, Placement>,
+  cols = 1,
+  masonry = false,
 ): LongLayout {
   const items = order.map((id) => images[id]).filter(Boolean) as ImageAsset[]
   const slots: Slot[] = []
@@ -322,22 +330,80 @@ export function longLayout(
   if (items.length === 0) {
     return { width: BASE_W, height: Math.round(BASE_W / style.aspect), slots }
   }
+  const n = Math.max(1, Math.min(MAX_LONG_COLS, Math.round(cols) || 1))
+  const ratio = (img: ImageAsset) => Math.max(0.01, img.width / Math.max(1, img.height))
+
   if (dir === 'vertical') {
-    const cw = BASE_W - pad * 2
+    const cw = Math.max(1, BASE_W - pad * 2)
+    const colW = Math.max(1, (cw - gap * (n - 1)) / n)
+    if (masonry) {
+      // 瀑布流：每张图放进当前最短的一列，列内间距恒为 gap
+      const colY = new Array<number>(n).fill(pad)
+      for (const img of items) {
+        let j = 0
+        for (let k = 1; k < n; k++) if (colY[k] < colY[j] - 0.5) j = k
+        const h = colW / ratio(img)
+        slots.push({
+          id: img.id,
+          rect: { x: pad + j * (colW + gap), y: colY[j], w: colW, h },
+          placement: placements[img.id],
+        })
+        colY[j] += h + gap
+      }
+      const bottom = Math.max(...colY)
+      return { width: BASE_W, height: Math.round(bottom - gap + pad), slots }
+    }
     let y = pad
-    for (const img of items) {
-      const h = (cw * img.height) / img.width
-      slots.push({ id: img.id, rect: { x: pad, y, w: cw, h }, placement: placements[img.id] })
-      y += h + gap
+    for (let i = 0; i < items.length; i += n) {
+      const row = items.slice(i, i + n)
+      let rowH = 1
+      for (const img of row) rowH = Math.max(rowH, colW / ratio(img))
+      row.forEach((img, j) => {
+        const h = colW / ratio(img)
+        slots.push({
+          id: img.id,
+          rect: { x: pad + j * (colW + gap), y: y + (rowH - h) / 2, w: colW, h },
+          placement: placements[img.id],
+        })
+      })
+      y += rowH + gap
     }
     return { width: BASE_W, height: Math.round(y - gap + pad), slots }
   }
-  const ch = Math.round(BASE_W / 1.4) - pad * 2
+
+  const ch = Math.max(1, Math.round(BASE_W / 1.4) - pad * 2)
+  const rowH = Math.max(1, (ch - gap * (n - 1)) / n)
+  if (masonry) {
+    // 瀑布流：每张图放进当前最短的一行，行内间距恒为 gap
+    const rowX = new Array<number>(n).fill(pad)
+    for (const img of items) {
+      let j = 0
+      for (let k = 1; k < n; k++) if (rowX[k] < rowX[j] - 0.5) j = k
+      const w = rowH * ratio(img)
+      slots.push({
+        id: img.id,
+        rect: { x: rowX[j], y: pad + j * (rowH + gap), w, h: rowH },
+        placement: placements[img.id],
+      })
+      rowX[j] += w + gap
+    }
+    const right = Math.max(...rowX)
+    return { width: Math.round(right - gap + pad), height: Math.round(ch + pad * 2), slots }
+  }
   let x = pad
-  for (const img of items) {
-    const w = (ch * img.width) / img.height
-    slots.push({ id: img.id, rect: { x, y: pad, w, h: ch }, placement: placements[img.id] })
-    x += w + gap
+  for (let i = 0; i < items.length; i += n) {
+    const col = items.slice(i, i + n)
+    let colW = 1
+    for (const img of col) colW = Math.max(colW, rowH * ratio(img))
+    col.forEach((img, j) => {
+      const w = rowH * ratio(img)
+      slots.push({
+        id: img.id,
+        rect: { x: x + (colW - w) / 2, y: pad + j * (rowH + gap), w, h: rowH },
+        placement: placements[img.id],
+      })
+    })
+    x += colW + gap
   }
   return { width: Math.round(x - gap + pad), height: Math.round(ch + pad * 2), slots }
 }

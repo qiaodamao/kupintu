@@ -182,6 +182,10 @@ export default function CanvasStage({
   const setSlotTransform = useEditor((s) => s.setSlotTransform)
   const setSlotImage = useEditor((s) => s.setSlotImage)
   const addFiles = useEditor((s) => s.addFiles)
+  const images = useEditor((s) => s.images)
+  const reorderImages = useEditor((s) => s.reorderImages)
+  const swapImages = useEditor((s) => s.swapImages)
+  const removeImage = useEditor((s) => s.removeImage)
   const beginTransaction = useEditor((s) => s.beginTransaction)
   const endTransaction = useEditor((s) => s.endTransaction)
 
@@ -614,10 +618,17 @@ export default function CanvasStage({
           const tf = s.placement?.tf ?? { scale: 1, dx: 0, dy: 0 }
           selectSlot(s.id)
           if (s.placement?.imageId) {
-            txnRef.current = true
-            beginTransaction()
-            dragRef.current = { kind: 'image-pan', slotId: s.id, sx: p.x, sy: p.y, dx: tf.dx, dy: tf.dy }
-            setDragKind('image-pan')
+            // 与网格模式保持一致：没放大（或按住 Shift）拖动 = 交换顺序；已放大 / 按住 Alt = 平移
+            const wantPan = !e.shiftKey && (e.altKey || tf.scale > ZOOM_EPS)
+            if (wantPan) {
+              txnRef.current = true
+              beginTransaction()
+              dragRef.current = { kind: 'image-pan', slotId: s.id, sx: p.x, sy: p.y, dx: tf.dx, dy: tf.dy }
+              setDragKind('image-pan')
+            } else {
+              dragRef.current = { kind: 'image-swap', slotId: s.id, sx: p.x, sy: p.y, active: false }
+              setDragKind('image-swap')
+            }
           }
           return
         }
@@ -627,6 +638,19 @@ export default function CanvasStage({
     // 4) 空白 → 平移视图
     dragRef.current = { kind: 'view', sx: e.clientX, sy: e.clientY, px: view.px, py: view.py }
     setDragKind('view')
+  }
+
+  /** 落点所在的格子：长图按槽位矩形找（一格就是一张图），网格按布局树找叶子 */
+  const targetSlotAt = (p: { x: number; y: number }): string | null => {
+    for (const s of slots) {
+      const r = s.rect
+      if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) return s.id
+    }
+    if (mode === 'grid') {
+      const inner = { x: style.padding, y: style.padding, w: width - style.padding * 2, h: height - style.padding * 2 }
+      return findLeafAt(tree, inner, style.gap, p.x, p.y)
+    }
+    return null
   }
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -686,8 +710,7 @@ export default function CanvasStage({
         dragRef.current = { ...d, active: true }
         setDragKind('image-swap')
       }
-      const inner = { x: style.padding, y: style.padding, w: width - style.padding * 2, h: height - style.padding * 2 }
-      const target = mode === 'grid' ? findLeafAt(tree, inner, style.gap, p.x, p.y) : null
+      const target = targetSlotAt(p)
       if (target !== hoverSlot) setHoverSlot(target)
       return
     }
@@ -760,6 +783,16 @@ export default function CanvasStage({
 
   const onPointerUp = (e: React.PointerEvent) => {
     pointersRef.current.delete(e.pointerId)
+    const d = dragRef.current
+    const p = toLogical(e.clientX, e.clientY)
+    // 交换图片必须在清空 dragRef 之前处理：否则拿到的已经是空状态（原来放在收尾之后，等于永远不执行）
+    if (d.kind === 'image-swap' && d.active) {
+      const target = targetSlotAt(p)
+      if (target && target !== d.slotId) {
+        if (mode === 'long') swapImages(d.slotId, target)
+        else swapSlots(d.slotId, target)
+      }
+    }
     // 手指少于两根即退出缩放态；剩下的一根不再续接之前的拖拽
     if (pointersRef.current.size < 2) {
       pinchRef.current = null
@@ -772,13 +805,6 @@ export default function CanvasStage({
         setDragKind('none')
         return
       }
-    }
-    const d = dragRef.current
-    const p = toLogical(e.clientX, e.clientY)
-    if (d.kind === 'image-swap' && d.active) {
-      const inner = { x: style.padding, y: style.padding, w: width - style.padding * 2, h: height - style.padding * 2 }
-      const target = mode === 'grid' ? findLeafAt(tree, inner, style.gap, p.x, p.y) : null
-      if (target && target !== d.slotId) swapSlots(d.slotId, target)
     }
     if (txnRef.current) {
       endTransaction()
@@ -888,11 +914,22 @@ export default function CanvasStage({
       if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) slotId = s.id
     }
     if (!slotId && mode === 'grid') slotId = findLeafAt(tree, inner, style.gap, p.x, p.y)
-    if (e.dataTransfer.files?.length) {
+    // 关键：拖拽 <img> 时浏览器会把这张图同时塞进 dataTransfer.files，
+    // 必须先认自定义数据，否则素材池里的图会被当成「新文件」再复制一份。
+    if (imageId && slotId) {
+      if (mode === 'long') {
+        // 长图模式一格就是一张图（slot id === 图片 id），没有「替换」这回事：
+        // 拖上来的是调整这张图在拼接条里的位置，否则会出现空槽 + 图片重复。
+        const from = images.findIndex((i) => i.id === imageId)
+        const to = images.findIndex((i) => i.id === slotId)
+        if (from >= 0 && to >= 0 && from !== to) reorderImages(from, to)
+      } else {
+        setSlotImage(slotId, imageId)
+      }
+    } else if (!imageId && e.dataTransfer.files?.length) {
+      // 真正的外部文件才走「新增到素材池」
       void addFiles(Array.from(e.dataTransfer.files))
-      return
     }
-    if (imageId && slotId) setSlotImage(slotId, imageId)
     setHoverSlot(null)
   }
 
@@ -1022,7 +1059,7 @@ export default function CanvasStage({
 
       {selSlot ? (
         <div className="pointer-events-none absolute border-2 border-brand-500" style={boxScreen(selSlot.rect)}>
-          {mode === 'grid' && selSlot.placement?.imageId ? (
+          {selSlot.placement?.imageId ? (
             <div className="pointer-events-auto absolute -top-9 left-0 flex items-center gap-1 rounded-lg bg-white/95 px-1.5 py-1 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
               <button
                 className="grid h-6 w-6 place-items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700"
@@ -1050,8 +1087,14 @@ export default function CanvasStage({
               </button>
               <button
                 className="grid h-6 w-6 place-items-center rounded hover:bg-rose-50 dark:hover:bg-rose-950"
-                title="移除该图"
-                onClick={() => setSlotImage(selSlot.id, null)}
+                title={mode === 'long' ? '从拼接中删除这张' : '移除该图'}
+                onClick={() => {
+                  const id = selSlot.placement?.imageId
+                  if (!id) return
+                  // 长图模式下「删除」= 真的从拼接条里去掉这张（后面的图自动前移）
+                  if (mode === 'long') removeImage(id)
+                  else setSlotImage(selSlot.id, null)
+                }}
               >
                 <IconTrash className="h-3.5 w-3.5 text-rose-500" />
               </button>
@@ -1221,7 +1264,8 @@ export default function CanvasStage({
           title="缩小画布"
           onClick={() => setView((v) => ({ ...v, zoom: Math.max(0.2, v.zoom * 0.9) }))}
         >
-          −
+          {/* 只放大符号本身，按钮尺寸保持不变 */}
+          <span className="text-lg font-medium leading-none">−</span>
         </Button>
         <span className="w-12 text-center font-mono text-[11px] text-slate-500">{Math.round(view.zoom * 100)}%</span>
         <Button
@@ -1230,7 +1274,7 @@ export default function CanvasStage({
           title="放大画布"
           onClick={() => setView((v) => ({ ...v, zoom: Math.min(4, v.zoom * 1.1) }))}
         >
-          +
+          <span className="text-lg font-medium leading-none">+</span>
         </Button>
         <Button size="sm" variant="ghost" onClick={fit} title="适应窗口">
           <IconFit className="h-3.5 w-3.5" />
