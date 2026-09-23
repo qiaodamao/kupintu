@@ -168,7 +168,12 @@ export const useEditor = create<EditorState>((set, get) => {
         }
         set({ mode, style, placements, selectedSlotId: null })
       } else {
-        set({ mode, style, selectedSlotId: null })
+        // 长图模式的 placements 以「图片 id」为键，网格模式要的是「叶子 id」：
+        // 直接切回去会键名错位导致整块空白，必须按当前布局树重新分配（会沿用各自的缩放/偏移）
+        const count = Math.max(1, Math.min(MAX_IMAGES, s.images.length))
+        const tree = countLeaves(s.tree) === count ? s.tree : genTemplates(count)[0].tree
+        const placements = fillPlacements(tree, s.images, s.placements)
+        set({ mode, style, tree, placements, selectedSlotId: null })
       }
     },
     setLongDir: (longDir) => set({ longDir }),

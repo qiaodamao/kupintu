@@ -140,6 +140,7 @@ scripts/
   smoke-long-style.mjs       长图模式默认样式（需 dev 服务器）
   smoke-logo.mjs             站点 Logo 与 favicon 加载
   smoke-mobile-header.mjs    顶栏在 320/390/768/1024 断点无溢出、按钮可见
+  smoke-mode-switch.mjs      布局 ⇄ 长图往返切换后图片仍在（placements 键名重建）
   smoke-selection-radius.mjs 选中/悬停描边圆角跟随「圆角」样式（0 时必须是直角）
   smoke-dark-mode.mjs        深色模式下品牌芯片的底色亮度与文字对比度
   smoke-transparent-export.mjs 勾选「透明背景」后导出画布的像素 alpha（含 JPG 填白、阴影不露白）
