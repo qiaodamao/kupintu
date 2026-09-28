@@ -15,8 +15,8 @@ import {
   IconSun,
   IconText,
 } from '@/components/Icons'
-import { cn } from '@/components/ui'
 import Logo from '@/components/Logo'
+import { cn } from '@/components/ui'
 import { SITE_URL, absUrl } from '@/lib/site'
 
 const FEATURES = [
@@ -104,7 +104,7 @@ function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+      className="grid h-10 w-10 place-items-center rounded-full border border-hairline text-ink transition-colors active:bg-surface-soft"
       aria-label="切换主题"
     >
       {dark ? <IconSun className="h-4 w-4" /> : <IconMoon className="h-4 w-4" />}
@@ -112,12 +112,12 @@ function ThemeToggle() {
   )
 }
 
+/** card-feature-photo 语言：32px 大圆角照片卡，内部渐变瓦片视作摄影内容 */
 function HeroPreview() {
   return (
     <div className="relative ml-auto w-full max-w-lg">
-      <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-tr from-brand-200 via-fuchsia-200 to-amber-200 opacity-60 blur-2xl dark:opacity-25" />
-      <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
-        <div className="grid aspect-square grid-cols-4 grid-rows-4 gap-2">
+      <div className="rounded-xxxl border border-hairline-soft bg-canvas p-5 sm:p-6">
+        <div className="grid aspect-square grid-cols-4 grid-rows-4 gap-2 overflow-hidden rounded-xxl">
           <div className="col-span-2 row-span-2 rounded-lg bg-gradient-to-br from-indigo-400 to-violet-500" />
           <div className="col-span-2 rounded-lg bg-gradient-to-br from-sky-300 to-cyan-400" />
           <div className="rounded-lg bg-gradient-to-br from-amber-300 to-orange-400" />
@@ -127,13 +127,13 @@ function HeroPreview() {
           <div className="rounded-lg bg-gradient-to-br from-slate-300 to-slate-400" />
           <div className="col-span-2 rounded-lg bg-gradient-to-br from-lime-300 to-green-400" />
         </div>
-        <div className="mt-3 flex justify-center">
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
+        <div className="mt-4 flex justify-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-4 py-2 text-xs font-bold text-charcoal">
             <span className="inline-flex gap-0.5">
-              <IconText className="h-3.5 w-3.5 text-brand-500" />
-              <IconArrow className="h-3.5 w-3.5 text-rose-500" />
-              <IconSquare className="h-3.5 w-3.5 text-emerald-500" />
-              <IconCircle className="h-3.5 w-3.5 text-amber-500" />
+              <IconText className="h-3.5 w-3.5 text-accent" />
+              <IconArrow className="h-3.5 w-3.5 text-critical" />
+              <IconSquare className="h-3.5 w-3.5 text-success" />
+              <IconCircle className="h-3.5 w-3.5 text-attention" />
             </span>
             文字 · 箭头 · 方框 · 圆圈
           </span>
@@ -172,97 +172,91 @@ const HOME_JSONLD = {
   ],
 }
 
+/* 营销面 CTA：黑药丸（button-primary）；描边药丸（button-secondary）为其副操作。
+   hover 只换底色 + 柔影，不做位移（位移会让按钮在光标下跳动）；按下回到深色 */
+const PILL_PRIMARY =
+  'text-button inline-flex items-center justify-center gap-2 rounded-full bg-ink-button px-[30px] py-[14px] text-on-ink-button transition duration-200 ease-out hover:bg-ink hover:shadow-[0_4px_12px_rgba(20,22,26,0.18)] active:bg-charcoal active:shadow-none'
+const PILL_SECONDARY =
+  'text-button inline-flex items-center justify-center rounded-full border-2 border-ink-deep px-[28px] py-[12px] text-ink-deep transition duration-200 ease-out hover:bg-ink-deep/[0.06] hover:shadow-[0_4px_12px_rgba(20,22,26,0.12)] active:bg-ink-deep/10 active:shadow-none'
+
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950">
+    <div className="min-h-screen bg-canvas text-ink">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(HOME_JSONLD) }}
       />
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-        <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-3 sm:gap-3 sm:px-4">
+      {/* Top Navigation：sticky 白底 64px + hairline-soft 底边 */}
+      <header className="sticky top-0 z-30 border-b border-hairline-soft bg-canvas/90 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-2 px-4 sm:gap-3 sm:px-8">
           <span className="flex shrink-0 items-center gap-2">
             <Logo className="h-[30px] w-[30px] shrink-0 rounded-lg sm:h-7 sm:w-7" />
-            <span className="text-[15px] font-semibold tracking-tight">酷拼图</span>
+            <span className="text-[15px] font-bold tracking-tight text-ink-deep">酷拼图</span>
           </span>
-          <nav className="ml-4 hidden gap-5 text-sm text-slate-600 md:flex dark:text-slate-300">
-            <a href="#features" className="hover:text-brand-600">功能</a>
-            <a href="#steps" className="hover:text-brand-600">使用步骤</a>
-            <a href="#scenes" className="hover:text-brand-600">应用场景</a>
-            <a href="#faq" className="hover:text-brand-600">常见问题</a>
+          <nav className="ml-6 hidden gap-5 text-sm font-bold text-steel lg:flex">
+            <a href="#features" className="hover:text-ink-deep">功能</a>
+            <a href="#steps" className="hover:text-ink-deep">使用步骤</a>
+            <a href="#scenes" className="hover:text-ink-deep">应用场景</a>
+            <a href="#faq" className="hover:text-ink-deep">常见问题</a>
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
-            <a
-              href="/editor/"
-              className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-lg bg-brand-600 px-3 text-sm font-medium text-white shadow-sm shadow-brand-600/25 transition hover:bg-brand-700 sm:px-4"
-            >
+            <a href="/editor/" className="text-button inline-flex h-10 shrink-0 items-center whitespace-nowrap rounded-full bg-ink-button px-5 text-on-ink-button transition duration-200 ease-out hover:bg-ink hover:shadow-[0_4px_12px_rgba(20,22,26,0.18)] active:bg-charcoal active:shadow-none">
               免费创作
             </a>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(99,102,241,0.12),transparent)]" />
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
-          <div className="flex flex-col justify-center">
-            <span className="mb-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 dark:bg-brand-950 dark:text-brand-300">
-              <IconShield className="h-3.5 w-3.5" />
-              纯本地处理 · 无需登录 · 无水印
-            </span>
-            <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl">
-              免费在线
-              <span className="bg-gradient-to-r from-brand-600 to-fuchsia-500 bg-clip-text text-transparent">拼图</span>
-              与长图拼接工具
-            </h1>
-            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-slate-600 dark:text-slate-300">
-              布局拼图、长图拼接、画布标注三合一。几十种模板、拖拽即换、
-              滚轮缩放，还能自由添加文字、箭头、方框与圆圈，全部在浏览器本地完成，4K 高清导出不打折。
-            </p>
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <a
-                href="/editor/"
-                className="inline-flex h-12 items-center gap-2 rounded-xl bg-brand-600 px-6 text-[15px] font-medium text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700"
-              >
-                <IconSparkles className="h-4 w-4" />
-                立即免费创作
-              </a>
-              <a
-                href="#features"
-                className="inline-flex h-12 items-center rounded-xl border border-slate-200 px-6 text-[15px] font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-              >
-                看看能做什么
-              </a>
-            </div>
-            <p className="mt-4 text-xs text-slate-400">打开即用，用完即走，不留任何痕迹</p>
+      {/* Hero：stark white canvas，双 CTA（黑药丸 + 描边药丸） */}
+      <section className="mx-auto grid max-w-[1280px] gap-12 px-4 py-16 sm:px-8 md:grid-cols-2 md:py-24">
+        <div className="flex flex-col justify-center">
+          <span className="mb-5 inline-flex w-fit items-center gap-1.5 rounded-full bg-surface-soft px-4 py-1.5 text-xs font-bold text-steel">
+            <IconShield className="h-3.5 w-3.5 text-success" />
+            纯本地处理 · 无需登录 · 无水印
+          </span>
+          <h1 className="text-[32px] font-medium leading-[1.16] tracking-tight text-ink-deep sm:text-[44px] md:text-[56px] lg:text-[64px]">
+            免费在线<span className="text-accent">拼图</span>
+            <br />
+            与长图拼接工具
+          </h1>
+          <p className="mt-5 max-w-xl text-[16px] leading-[1.5] text-charcoal">
+            布局拼图、长图拼接、画布标注三合一。几十种模板、拖拽即换、
+            滚轮缩放，还能自由添加文字、箭头、方框与圆圈，全部在浏览器本地完成，4K 高清导出不打折。
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <a href="/editor/" className={PILL_PRIMARY}>
+              <IconSparkles className="h-4 w-4" />
+              立即免费创作
+            </a>
+            <a href="#features" className={PILL_SECONDARY}>
+              看看能做什么
+            </a>
           </div>
-          <div className="flex items-center justify-center">
-            <HeroPreview />
-          </div>
+          <p className="mt-5 text-xs text-steel">打开即用，用完即走，不留任何痕迹</p>
+        </div>
+        <div className="flex items-center justify-center">
+          <HeroPreview />
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="scroll-mt-16 border-t border-slate-100 bg-slate-50/60 py-16 dark:border-slate-800 dark:bg-slate-900/40">
-        <div className="mx-auto max-w-7xl px-4">
-          <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">超越传统拼图的全能画布</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+      {/* Features：card-icon-feature（16px 圆角 + hairline-soft 描边 + 24px 内边距） */}
+      <section id="features" className="scroll-mt-20 py-16 md:py-20">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
+          <h2 className="text-center text-[28px] font-medium leading-[1.21] text-ink-deep md:text-[36px]">
+            超越传统拼图的全能画布
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-[16px] leading-[1.5] text-steel">
             不只是把图片摆在一起 —— 布局、长图、标注、样式、导出，一条链路全部搞定。
           </p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
-              >
-                <span className="mb-3 grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950 dark:text-brand-300">
+              <div key={f.title} className="rounded-xl border border-hairline-soft bg-canvas p-6">
+                <span className="mb-4 grid h-10 w-10 place-items-center rounded-full bg-surface-soft text-accent">
                   {f.icon}
                 </span>
-                <h3 className="mb-1.5 text-[15px] font-semibold">{f.title}</h3>
-                <p className="text-[13px] leading-relaxed text-slate-600 dark:text-slate-400">{f.desc}</p>
+                <h3 className="mb-2 text-[18px] font-bold leading-[1.44] text-ink-deep">{f.title}</h3>
+                <p className="text-sm leading-[1.43] tracking-[-0.14px] text-steel">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -270,17 +264,19 @@ export default function Home() {
       </section>
 
       {/* Steps */}
-      <section id="steps" className="scroll-mt-16 py-16">
-        <div className="mx-auto max-w-7xl px-4">
-          <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">三步做出一张好拼图</h2>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
+      <section id="steps" className="scroll-mt-20 bg-surface-soft py-16 md:py-20">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
+          <h2 className="text-center text-[28px] font-light leading-[1.21] text-ink-deep md:text-[36px] md:font-normal">
+            三步做出一张好拼图
+          </h2>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
             {STEPS.map((s) => (
-              <div key={s.n} className="relative rounded-2xl border border-slate-200 p-6 dark:border-slate-800">
-                <span className="mb-3 grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-fuchsia-500 text-sm font-bold text-white">
+              <div key={s.n} className="rounded-xl border border-hairline-soft bg-canvas p-8">
+                <span className="chip-accent mb-4 grid h-10 w-10 place-items-center rounded-full text-sm font-bold">
                   {s.n}
                 </span>
-                <h3 className="mb-1.5 text-[15px] font-semibold">{s.title}</h3>
-                <p className="text-[13px] leading-relaxed text-slate-600 dark:text-slate-400">{s.desc}</p>
+                <h3 className="mb-2 text-[18px] font-bold leading-[1.44] text-ink-deep">{s.title}</h3>
+                <p className="text-sm leading-[1.43] tracking-[-0.14px] text-steel">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -288,55 +284,63 @@ export default function Home() {
       </section>
 
       {/* Scenes */}
-      <section id="scenes" className="scroll-mt-16 border-t border-slate-100 bg-slate-50/60 py-16 dark:border-slate-800 dark:bg-slate-900/40">
-        <div className="mx-auto max-w-7xl px-4">
-          <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">这些场景，它都能搞定</h2>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section id="scenes" className="scroll-mt-20 py-16 md:py-20">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
+          <h2 className="text-center text-[28px] font-medium leading-[1.21] text-ink-deep md:text-[36px]">
+            这些场景，它都能搞定
+          </h2>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {SCENES.map((s) => (
-              <div key={s.title} className="rounded-2xl bg-white p-5 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
-                <h3 className="mb-1.5 text-[15px] font-semibold">{s.title}</h3>
-                <p className="text-[13px] leading-relaxed text-slate-600 dark:text-slate-400">{s.desc}</p>
+              <div key={s.title} className="rounded-xl border border-hairline-soft bg-canvas p-6">
+                <h3 className="mb-2 text-[18px] font-bold leading-[1.44] text-ink-deep">{s.title}</h3>
+                <p className="text-sm leading-[1.43] tracking-[-0.14px] text-steel">{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Privacy */}
+      {/* Privacy：card-promo-strip（ink-deep 深色大卡，32px 圆角） */}
       <section className="py-16">
-        <div className="mx-auto max-w-4xl px-4">
-          <div className="rounded-3xl bg-gradient-to-br from-brand-600 to-fuchsia-600 p-8 text-white sm:p-12">
-            <IconShield className="h-8 w-8" />
-            <h2 className="mt-4 text-2xl font-bold">你的照片，从未离开你的设备</h2>
-            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-white/90">
-              我们不做上传，不做存储，也没有账号体系。所有拼接、渲染、导出都在你的浏览器里完成，
-              关掉页面，一切归零。把隐私交还给你自己。
-            </p>
-            <a
-              href="/editor/"
-              className="mt-7 inline-flex h-11 items-center rounded-xl bg-white px-6 text-sm font-semibold text-brand-700 transition hover:bg-white/90"
-            >
-              开始创作
-            </a>
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
+          <div className="chip-accent rounded-xxxl px-6 py-12 sm:px-12 sm:py-16">
+            <div className="mx-auto max-w-3xl">
+              <IconShield className="h-8 w-8" />
+              <h2 className="mt-5 text-[28px] font-medium leading-[1.21] md:text-[36px]">
+                你的照片，从未离开你的设备
+              </h2>
+              <p className="mt-4 max-w-2xl text-[16px] leading-[1.5] opacity-75">
+                我们不做上传，不做存储，也没有账号体系。所有拼接、渲染、导出都在你的浏览器里完成，
+                关掉页面，一切归零。把隐私交还给你自己。
+              </p>
+              <a
+                href="/editor/"
+                className="text-button mt-8 inline-flex items-center justify-center rounded-full bg-canvas px-[30px] py-[14px] text-ink-deep transition-colors active:bg-surface-soft"
+              >
+                开始创作
+              </a>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section id="faq" className="scroll-mt-16 border-t border-slate-100 py-16 dark:border-slate-800">
-        <div className="mx-auto max-w-3xl px-4">
-          <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">常见问题</h2>
-          <div className="mt-8 space-y-3">
+      {/* FAQ：faq-accordion-item（16px 圆角 + hairline-soft 描边 + 24px 内边距） */}
+      <section id="faq" className="scroll-mt-20 py-16 md:py-20">
+        <div className="mx-auto max-w-3xl px-4 sm:px-8">
+          <h2 className="text-center text-[28px] font-medium leading-[1.21] text-ink-deep md:text-[36px]">
+            常见问题
+          </h2>
+          <div className="mt-10 space-y-3">
             {FAQS.map((f) => (
               <details
                 key={f.q}
-                className="group rounded-xl border border-slate-200 bg-white px-5 py-4 open:shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                className="group rounded-xl border border-hairline-soft bg-canvas px-6 py-5"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between text-[15px] font-medium">
+                <summary className="flex cursor-pointer list-none items-center justify-between text-[16px] font-bold text-ink-deep">
                   {f.q}
-                  <span className="ml-3 shrink-0 text-slate-400 transition group-open:rotate-180">▾</span>
+                  <span className="ml-3 shrink-0 text-steel transition-transform group-open:rotate-180">▾</span>
                 </summary>
-                <p className="mt-3 text-[13px] leading-relaxed text-slate-600 dark:text-slate-400">{f.a}</p>
+                <p className="mt-4 text-[15px] leading-[1.5] text-charcoal">{f.a}</p>
               </details>
             ))}
           </div>
@@ -344,30 +348,27 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="pb-20">
-        <div className="mx-auto max-w-4xl px-4 text-center">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">现在就去拼一张</h2>
-          <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">免费、无限制、无需注册，打开就能用。</p>
-          <a
-            href="/editor/"
-            className={cn(
-              'mt-7 inline-flex h-12 items-center gap-2 rounded-xl bg-brand-600 px-8 text-[15px] font-medium text-white',
-              'shadow-lg shadow-brand-600/25 transition hover:bg-brand-700',
-            )}
-          >
+      <section className="pb-24">
+        <div className="mx-auto max-w-[1280px] px-4 text-center sm:px-8">
+          <h2 className="text-[28px] font-medium leading-[1.21] text-ink-deep md:text-[36px]">
+            现在就去拼一张
+          </h2>
+          <p className="mt-3 text-[15px] text-steel">免费、无限制、无需注册，打开就能用。</p>
+          <a href="/editor/" className={cn(PILL_PRIMARY, 'mt-8 h-12 px-8')}>
             <IconSparkles className="h-4 w-4" />
             进入拼图编辑器
           </a>
         </div>
       </section>
 
-      <footer className="border-t border-slate-200 py-8 dark:border-slate-800">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 text-xs text-slate-500 sm:flex-row dark:text-slate-400">
-          <span>© {new Date().getFullYear()} 酷拼图 · 免费在线拼图工具</span>
-          <span className="flex items-center gap-4">
-            <a href="/editor/" className="hover:text-brand-600">编辑器</a>
-            <a href="#features" className="hover:text-brand-600">功能</a>
-            <a href="#faq" className="hover:text-brand-600">常见问题</a>
+      {/* footer-region：白底 + 顶部分隔线，steel 链接层级 */}
+      <footer className="border-t border-hairline-soft bg-canvas py-14">
+        <div className="mx-auto flex max-w-[1280px] flex-col items-center justify-between gap-4 px-4 text-sm text-steel sm:flex-row sm:px-8">
+          <span className="text-xs text-steel">© {new Date().getFullYear()} 酷拼图 · 免费在线拼图工具</span>
+          <span className="flex items-center gap-6">
+            <a href="/editor/" className="font-bold hover:text-ink-deep">编辑器</a>
+            <a href="#features" className="font-bold hover:text-ink-deep">功能</a>
+            <a href="#faq" className="font-bold hover:text-ink-deep">常见问题</a>
           </span>
         </div>
       </footer>

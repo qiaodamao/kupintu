@@ -37,8 +37,8 @@ function svg(size, { scale = 1 } = {}) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#6366f1" />
-      <stop offset="1" stop-color="#d946ef" />
+      <stop offset="0" stop-color="#0064e0" />
+      <stop offset="1" stop-color="#0091ff" />
     </linearGradient>
   </defs>
   <rect width="${size}" height="${size}" fill="url(#g)" />

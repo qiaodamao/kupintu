@@ -94,6 +94,11 @@ export const IconRedo = (p: P) => (
     <path d="M17 4l4 4-4 4" />
   </svg>
 )
+export const IconMinus = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M5 12h14" />
+  </svg>
+)
 export const IconPlus = (p: P) => (
   <svg {...base(p)}>
     <path d="M12 5v14M5 12h14" />

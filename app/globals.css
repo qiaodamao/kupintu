@@ -2,29 +2,78 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ---------------------------------------------------------------------------
+   Meta 设计体系令牌（见 DESIGN-meta.md）
+   语义色名在 .dark 中整体重映射：组件写 bg-canvas / text-ink 即自动适配暗色，
+   无需逐个写 dark: 变体（DESIGN-meta.md 未发布暗色令牌，暗色按同构中性灰递进）。
+--------------------------------------------------------------------------- */
 @theme {
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-300: #a5b4fc;
-  --color-brand-400: #818cf8;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
-  /* 800~950 必须补齐：dark:bg-brand-950 之类一旦缺档，Tailwind 不会生成该工具类，
-     深色模式下会继续吃浅色的 bg-brand-50（近白），变成刺眼的白底 */
-  --color-brand-800: #3730a3;
-  --color-brand-900: #312e81;
-  --color-brand-950: #1e1b4b;
+  /* Brand & Accent */
+  --color-primary: #0064e0;
+  --color-primary-deep: #0457cb;
+  --color-on-primary: #ffffff;
+  /* 品牌色作为「前景」（图标/文字/高亮词）时用这支，暗色下提亮，避免 #0064e0 落在深底上只有 2.9 对比 */
+  --color-accent: #0064e0;
+  --color-ink-button: #000000;
+  --color-on-ink-button: #ffffff;
+  --color-fb-blue: #1876f2;
+
+  /* Semantic */
+  --color-success: #31a24c;
+  --color-attention: #f2a918;
+  --color-critical: #e41e3f;
+
+  /* Surface / Text（亮色初始值，.dark 覆盖） */
+  --color-canvas: #ffffff;
+  --color-surface-soft: #f1f4f7;
+  --color-ink-deep: #0a1317;
+  --color-ink: #1c1e21;
+  --color-charcoal: #444950;
+  --color-steel: #5d6c7b;
+  --color-stone: #8595a4;
+  --color-hairline: #ced0d4;
+  --color-hairline-soft: #dee3e9;
+  --color-disabled: #bcc0c4;
+
+  /* 圆角（Meta 标度：8 输入 / 16 功能卡 / 24 附件卡 / 32 展示卡 / 100 药丸） */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 16px;
+  --radius-xxl: 24px;
+  --radius-xxxl: 32px;
+  --radius-feature: 40px;
+
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
     'Noto Sans SC', Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* 暗色重映射：画布→深底，墨色→白字，hairline→暗色分隔线 */
+.dark {
+  --color-canvas: #0a1317;
+  --color-surface-soft: #1c2327;
+  --color-ink-deep: #ffffff;
+  --color-ink: #e4e6e9;
+  --color-charcoal: #b8bcc2;
+  --color-steel: #8b98a5;
+  --color-stone: #6b7885;
+  --color-hairline: #3a4148;
+  --color-hairline-soft: #262c31;
+  --color-disabled: #5a6168;
+  /* 营销黑药丸在暗色画布上翻成白药丸 */
+  --color-ink-button: #ffffff;
+  --color-on-ink-button: #0a1317;
+  /* 前景用色在深底上要提亮（bg-primary 那类实心填充仍用 --color-primary，白字对比不变） */
+  --color-accent: #6aa8ff;
+  --color-success: #4ec771;
+  --color-attention: #f5b73d;
+  --color-critical: #ff6b81;
+  color-scheme: dark;
+}
+
 :root {
   color-scheme: light;
-}
-.dark {
-  color-scheme: dark;
 }
 
 html,
@@ -34,48 +83,64 @@ body {
 
 body {
   font-family: var(--font-sans);
+  /* Meta body-md：-0.16px 字距收紧 */
+  letter-spacing: -0.16px;
   -webkit-font-smoothing: antialiased;
+}
+
+/* 按钮/药丸标签/页脚标题共用的 button-md 排印（14/700/-0.14px） */
+.text-button {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.43;
+  letter-spacing: -0.14px;
+}
+
+/* 反色强调底：亮色深墨底白字，暗色白底深字（供选中态药丸、悬浮提示条共用） */
+.chip-accent {
+  background-color: #0a1317;
+  color: #ffffff;
+}
+.dark .chip-accent {
+  background-color: #ffffff;
+  color: #0a1317;
 }
 
 /* 棋盘格（透明背景预览） */
 .checkerboard {
-  background-image: linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
-    linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
-    linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+  background-color: var(--color-surface-soft);
+  background-image: linear-gradient(45deg, var(--color-hairline-soft) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--color-hairline-soft) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--color-hairline-soft) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--color-hairline-soft) 75%);
   background-size: 18px 18px;
   background-position: 0 0, 0 9px, 9px -9px, -9px 0px;
-}
-.dark .checkerboard {
-  background-image: linear-gradient(45deg, #334155 25%, transparent 25%),
-    linear-gradient(-45deg, #334155 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #334155 75%),
-    linear-gradient(-45deg, transparent 75%, #334155 75%);
 }
 
 /* 细滚动条 */
 .scroll-thin {
   scrollbar-width: thin;
-  scrollbar-color: rgb(148 163 184 / 0.5) transparent;
+  scrollbar-color: var(--color-hairline) transparent;
 }
 .scroll-thin::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background: rgb(148 163 184 / 0.45);
+  background: var(--color-hairline);
   border-radius: 999px;
 }
 .scroll-thin::-webkit-scrollbar-track {
   background: transparent;
 }
 
+/* 滑块：cobalt 圆形拖钮 + 白色描边（color-swatch 同款 rings） */
 input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
   border-radius: 999px;
-  background: rgb(148 163 184 / 0.35);
+  background: var(--color-hairline);
   outline: none;
 }
 input[type='range']::-webkit-slider-thumb {
@@ -84,7 +149,7 @@ input[type='range']::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 999px;
-  background: #6366f1;
+  background: var(--color-primary);
   border: 2px solid #fff;
   box-shadow: 0 1px 4px rgb(15 23 42 / 0.25);
   cursor: pointer;
@@ -93,9 +158,15 @@ input[type='range']::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 999px;
-  background: #6366f1;
+  background: var(--color-primary);
   border: 2px solid #fff;
   cursor: pointer;
+}
+.dark input[type='range']::-webkit-slider-thumb {
+  border-color: var(--color-canvas);
+}
+.dark input[type='range']::-moz-range-thumb {
+  border-color: var(--color-canvas);
 }
 
 .no-scrollbar::-webkit-scrollbar {

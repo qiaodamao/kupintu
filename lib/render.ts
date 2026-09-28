@@ -256,7 +256,7 @@ function drawAnnotation(ctx: CanvasRenderingContext2D, a: Annotation, selected: 
   }
   if (selected) {
     const b = annotationBounds(ctx, a)
-    ctx.strokeStyle = '#6366f1'
+    ctx.strokeStyle = '#0064e0'
     ctx.lineWidth = 1.5
     ctx.setLineDash([6, 4])
     ctx.strokeRect(b.x - 4, b.y - 4, b.w + 8, b.h + 8)

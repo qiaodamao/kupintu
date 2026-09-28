@@ -114,7 +114,7 @@ await evaluate(`
     },
     dragCursor() {
       const c = document.querySelector('canvas')
-      return { cursor: c?.parentElement?.style?.cursor ?? null, selection: document.querySelectorAll('div.border-brand-500').length }
+      return { cursor: c?.parentElement?.style?.cursor ?? null, selection: document.querySelectorAll('div.border-primary').length }
     },
     errs() { return window.__errs || [] },
   };

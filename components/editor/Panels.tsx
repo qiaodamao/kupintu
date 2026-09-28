@@ -66,20 +66,21 @@ export function TopBar({ onExport }: { onExport: () => void }) {
   ]
 
   return (
-    <header className="shrink-0 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
-      {/* 通栏显示（不居中），内边距与首页一致：px-3 / sm:px-4；
-          320 一类超窄屏放不下，单独收紧兜底防裁切 */}
+    <header className="shrink-0 border-b border-hairline-soft bg-canvas/90 backdrop-blur">
+      {/* 工具面用紧凑留白（px-3 / sm:px-4），营销首页用 16 / 32 容器留白；
+          320 一类超窄屏放不下，分段药丸与留白一起再收紧兜底防裁切 */}
       <div className="flex h-14 items-center gap-1.5 px-3 max-[359px]:gap-0.5 max-[359px]:px-2 sm:gap-2 sm:px-4">
         {/* 窄屏下 logo 与模式切换挨得太近，额外补一点间距（宽屏保持原样） */}
         <a href="/" className="flex shrink-0 items-center gap-2 mr-2.5 max-[359px]:mr-1 sm:mr-2" title="酷拼图">
           <Logo className="h-[30px] w-[30px] shrink-0 rounded-lg sm:h-7 sm:w-7" />
-          <span className="hidden text-[15px] font-semibold tracking-tight text-slate-900 sm:block dark:text-white">
+          <span className="hidden text-[15px] font-bold tracking-tight text-ink-deep sm:block">
             酷拼图
           </span>
         </a>
 
-        {/* 窄屏只显示图标，文字用 title 兜底 */}
+        {/* 窄屏只显示图标，文字用 title 兜底；图标统一压到 14px，与文字药丸同高 */}
         <Segmented
+          className="max-[359px]:[&>button]:px-2"
           value={mode}
           onChange={setMode}
           options={[
@@ -108,6 +109,7 @@ export function TopBar({ onExport }: { onExport: () => void }) {
 
         {mode === 'long' ? (
           <Segmented
+            className="max-[359px]:[&>button]:px-2"
             value={longDir}
             onChange={setLongDir}
             options={[
@@ -136,28 +138,36 @@ export function TopBar({ onExport }: { onExport: () => void }) {
           />
         ) : null}
 
-        <div className="mx-1 hidden h-6 w-px shrink-0 bg-slate-200 lg:block dark:bg-slate-700" />
+        <div className="mx-1 hidden h-6 w-px shrink-0 bg-hairline-soft lg:block" />
         {/* 绘制工具在窄屏由画布下方的 MobileTools 承担；这里用外层容器控制显隐
             （Segmented / Button 自身带 inline-flex，直接传 hidden 会被它覆盖） */}
         <div className="hidden shrink-0 lg:block">
-          <Segmented value={tool} onChange={setTool} options={tools} />
+          <Segmented
+            value={tool}
+            onChange={setTool}
+            options={tools.map((t) => ({
+              ...t,
+              label: <span className="flex items-center [&>svg]:h-3.5 [&>svg]:w-3.5">{t.label}</span>,
+            }))}
+          />
         </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-1 lg:gap-1.5">
           <span className="hidden sm:inline-flex">
-            <Button size="sm" variant="ghost" onClick={undo} disabled={!canUndo} title="撤销 Ctrl+Z" aria-label="撤销">
+            <Button size="sm" variant="ghost" onClick={undo} disabled={!canUndo} title="撤销 Ctrl+Z" aria-label="撤销" className="!px-2.5">
               <IconUndo className="h-4 w-4" />
             </Button>
           </span>
           <span className="hidden sm:inline-flex">
-            <Button size="sm" variant="ghost" onClick={redo} disabled={!canRedo} title="重做 Ctrl+Shift+Z" aria-label="重做">
+            <Button size="sm" variant="ghost" onClick={redo} disabled={!canRedo} title="重做 Ctrl+Shift+Z" aria-label="重做" className="!px-2.5">
               <IconRedo className="h-4 w-4" />
             </Button>
           </span>
-          <Button size="sm" variant="ghost" onClick={toggleTheme} title="切换主题" aria-label="切换主题">
+          <Button size="sm" variant="ghost" onClick={toggleTheme} title="切换主题" aria-label="切换主题" className="!px-2.5">
             {dark ? <IconSun className="h-4 w-4" /> : <IconMoon className="h-4 w-4" />}
           </Button>
-          <Button size="sm" variant="primary" onClick={onExport} className="px-2 sm:px-3">
+          {/* 工具面主操作 = cobalt 药丸（button-buy-cta） */}
+          <Button variant="commerce" size="sm" onClick={onExport} className="px-3 sm:px-4">
             <IconDownload className="h-4 w-4" />
             导出
           </Button>
@@ -250,7 +260,7 @@ export function ImagePanel({ onPick }: { onPick: (files: File[]) => void }) {
 
   return (
     <div className="flex h-full flex-col">
-      <Section title="图片素材" icon={<IconImage className="h-3.5 w-3.5 text-brand-500" />}>
+      <Section title="图片素材" icon={<IconImage className="h-3.5 w-3.5 text-accent" />}>
         <div
           onClick={() => inputRef.current?.click()}
           onDragOver={(e) => e.preventDefault()}
@@ -260,11 +270,11 @@ export function ImagePanel({ onPick }: { onPick: (files: File[]) => void }) {
             if (e.dataTransfer.getData('application/x-kupintu-image')) return
             pick(e.dataTransfer.files)
           }}
-          className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/60 py-6 text-center transition-colors hover:border-brand-400 hover:bg-brand-50/50 dark:border-slate-700 dark:bg-slate-800/40"
+          className="flex cursor-pointer flex-col items-center justify-center rounded-xxl border-2 border-dashed border-hairline bg-surface-soft/60 py-6 text-center transition-colors hover:border-primary hover:bg-surface-soft"
         >
-          <IconUpload className="mb-2 h-6 w-6 text-brand-500" />
-          <p className="text-xs font-medium text-slate-700 dark:text-slate-200">点击或拖拽上传图片</p>
-          <p className="mt-1 text-[11px] text-slate-400">支持 JPG / PNG / WebP · 最多 {MAX_IMAGES} 张</p>
+          <IconUpload className="mb-2 h-6 w-6 text-accent" />
+          <p className="text-xs font-bold text-ink">点击或拖拽上传图片</p>
+          <p className="mt-1 text-[11px] text-steel">支持 JPG / PNG / WebP · 最多 {MAX_IMAGES} 张</p>
         </div>
         <input
           ref={inputRef}
@@ -281,17 +291,17 @@ export function ImagePanel({ onPick }: { onPick: (files: File[]) => void }) {
 
       <Section
         title={`已上传 ${images.length}`}
-        icon={<IconLayers className="h-3.5 w-3.5 text-brand-500" />}
+        icon={<IconLayers className="h-3.5 w-3.5 text-accent" />}
         right={
           images.length ? (
-            <button onClick={clearImages} className="text-[11px] text-slate-400 hover:text-rose-500">
+            <button onClick={clearImages} className="text-[11px] font-bold text-steel hover:text-critical">
               清空
             </button>
           ) : null
         }
       >
         {images.length === 0 ? (
-          <p className="py-4 text-center text-xs text-slate-400">还没有图片，先上传几张吧</p>
+          <p className="py-4 text-center text-xs text-steel">还没有图片，先上传几张吧</p>
         ) : (
           <ul
             ref={listRef}
@@ -333,24 +343,24 @@ export function ImagePanel({ onPick }: { onPick: (files: File[]) => void }) {
                   zIndex: dragging ? 20 : undefined,
                 }}
                 className={cn(
-                  'group relative flex cursor-grab items-center gap-2 rounded-lg border p-1.5 active:cursor-grabbing',
+                  'group relative flex cursor-grab items-center gap-2 rounded-xl border bg-canvas p-1.5 active:cursor-grabbing',
                   dragging
-                    ? 'border-brand-400 bg-white shadow-lg ring-2 ring-brand-300 dark:border-brand-500 dark:bg-slate-800'
-                    : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800',
+                    ? 'border-primary shadow-[0_1px_4px_rgba(20,22,26,0.3)]'
+                    : 'border-hairline-soft',
                 )}
               >
-                <span className="w-4 shrink-0 text-center font-mono text-[10px] text-slate-400">{i + 1}</span>
+                <span className="w-4 shrink-0 text-center font-mono text-[10px] text-stone">{i + 1}</span>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={img.url} alt={img.name} className="h-10 w-10 shrink-0 rounded-md object-cover" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[11px] text-slate-700 dark:text-slate-200">{img.name}</p>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="truncate text-[11px] text-ink">{img.name}</p>
+                  <p className="text-[10px] text-stone">
                     {img.width}×{img.height}
                   </p>
                 </div>
                 <button
                   onClick={() => removeImage(img.id)}
-                  className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-500"
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-stone opacity-0 transition group-hover:opacity-100 hover:bg-critical/10 hover:text-critical"
                   title="移除"
                 >
                   <IconTrash className="h-3.5 w-3.5" />
@@ -360,7 +370,7 @@ export function ImagePanel({ onPick }: { onPick: (files: File[]) => void }) {
             })}
           </ul>
         )}
-        <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
+        <p className="mt-2 text-[11px] leading-relaxed text-steel">
           拖动缩略图排序，中间的图会自动让开
           {mode === 'long' ? '；也可直接拖到画布上，放到拼接条里的指定位置。' : '；拖到画布上的格子即可替换图片。'}
         </p>
@@ -431,14 +441,14 @@ function LongTemplatePreview({ dir, cols, active }: { dir: LongDirection; cols: 
       className={cn(
         'grid h-9 w-full rounded-[3px] p-[2px]',
         cols >= 5 ? 'gap-[1px]' : 'gap-[2px]',
-        active ? 'bg-brand-100 dark:bg-brand-950' : 'bg-slate-100 dark:bg-slate-700',
+        active ? 'bg-primary/10' : 'bg-surface-soft',
       )}
       style={{ gridTemplateColumns: `repeat(${c}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${r}, minmax(0, 1fr))` }}
     >
       {Array.from({ length: c * r }, (_, i) => (
         <span
           key={i}
-          className={cn('rounded-[1px]', active ? 'bg-brand-500' : 'bg-slate-300 dark:bg-slate-500')}
+          className={cn('rounded-[1px]', active ? 'bg-primary' : 'bg-hairline')}
         />
       ))}
     </span>
@@ -458,13 +468,13 @@ function TemplatePreview({ tree, ratio }: { tree: LayoutNode; ratio: number }) {
   const rects = useMemo(() => Array.from(computeRects(tree, { x: 0, y: 0, w: 100, h: 100 }, 2.5).values()), [tree])
   return (
     <div
-      className="relative w-full overflow-hidden rounded-md bg-slate-100 dark:bg-slate-700"
+      className="relative w-full overflow-hidden rounded-md bg-surface-soft"
       style={{ aspectRatio: String(ratio) }}
     >
       {rects.map((r, i) => (
         <div
           key={i}
-          className="absolute rounded-[1.5px] bg-slate-300 dark:bg-slate-500"
+          className="absolute rounded-[1.5px] bg-hairline"
           style={{ left: `${r.x}%`, top: `${r.y}%`, width: `${r.w}%`, height: `${r.h}%` }}
         />
       ))}
@@ -495,7 +505,7 @@ export function StylePanel() {
   return (
     <div>
       {mode === 'grid' ? (
-        <Section title="布局模板" icon={<IconGrid className="h-3.5 w-3.5 text-brand-500" />}>
+        <Section title="布局模板" icon={<IconGrid className="h-3.5 w-3.5 text-accent" />}>
           {/* 1~30 排成 6 列网格（5 行）：横向滚动条被隐藏后必须换行才能全部看到 */}
           <div className="mb-3 grid grid-cols-6 gap-1">
             {Array.from({ length: MAX_IMAGES }, (_, i) => i + 1).map((n) => (
@@ -504,10 +514,10 @@ export function StylePanel() {
                 onClick={() => ensureTemplate(n)}
                 disabled={n > images.length && images.length > 0}
                 className={cn(
-                  'h-7 w-full rounded-md text-[11px] font-medium transition',
+                  'h-7 w-full rounded-full text-[11px] font-bold transition-colors disabled:opacity-40',
                   n === count
-                    ? 'bg-brand-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-40 dark:bg-slate-800 dark:text-slate-300',
+                    ? 'chip-accent'
+                    : 'border border-hairline bg-canvas text-ink hover:border-ink',
                 )}
               >
                 {n}
@@ -519,10 +529,10 @@ export function StylePanel() {
               <button
                 key={t.id}
                 onClick={() => applyTemplate(t.tree)}
-                className="rounded-lg border border-slate-200 p-1.5 text-left transition hover:border-brand-400 hover:bg-brand-50/40 dark:border-slate-700 dark:hover:bg-slate-800"
+                className="rounded-lg border border-hairline-soft bg-canvas p-1.5 text-left transition hover:border-ink"
               >
                 <TemplatePreview tree={t.tree} ratio={style.aspect} />
-                <span className="mt-1 block truncate text-[10px] text-slate-500 dark:text-slate-400">{t.name}</span>
+                <span className="mt-1 block truncate text-[10px] text-steel">{t.name}</span>
               </button>
             ))}
           </div>
@@ -532,19 +542,19 @@ export function StylePanel() {
           </Button>
         </Section>
       ) : (
-        <Section title="布局模板" icon={<IconLong className="h-3.5 w-3.5 text-brand-500" />}>
-          <p className="mb-3 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+        <Section title="布局模板" icon={<IconLong className="h-3.5 w-3.5 text-accent" />}>
+          <p className="mb-3 text-[11px] leading-relaxed text-steel">
             按左侧图片顺序依次拼接，拖动缩略图即可调整顺序；画布尺寸自动计算，不受比例限制。
           </p>
           <div className="space-y-3">
             {LONG_GROUPS.map((g) => (
               <div key={g.dir}>
-                <div className="mb-1.5 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                  <span className="flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
+                <div className="mb-1.5 flex items-center gap-1 text-[11px] text-steel">
+                  <span className="flex items-center gap-1 font-bold text-charcoal">
                     <FlowArrow dir={g.dir} />
                     {g.label}
                   </span>
-                  <span className="text-slate-400">· {g.hint}</span>
+                  <span className="text-steel">· {g.hint}</span>
                 </div>
                 <div className="grid grid-cols-4 gap-1.5">
                   {LONG_COLS.map((n) => {
@@ -555,17 +565,18 @@ export function StylePanel() {
                         onClick={() => setLongLayout(g.dir, n)}
                         title={`${g.label} · ${g.dir === 'vertical' ? `每排 ${n} 张` : `每列 ${n} 张`}`}
                         className={cn(
-                          'rounded-md border p-1 transition',
+                          // radio-option / selected：2px 深 cobalt 描边
+                          'rounded-lg border p-1 transition',
                           active
-                            ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/60'
-                            : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800',
+                            ? 'border-2 border-[#0143b5] bg-canvas'
+                            : 'border border-transparent hover:bg-surface-soft',
                         )}
                       >
                         <LongTemplatePreview dir={g.dir} cols={n} active={active} />
                         <span
                           className={cn(
                             'mt-1 block text-center text-[10px]',
-                            active ? 'font-medium text-brand-700 dark:text-brand-300' : 'text-slate-500 dark:text-slate-400',
+                            active ? 'font-bold text-accent' : 'text-steel',
                           )}
                         >
                           {n} 列
@@ -584,7 +595,7 @@ export function StylePanel() {
               onChange={setLongMasonry}
               disabled={longCols <= 1}
             />
-            <p className="text-[11px] leading-relaxed text-slate-400">
+            <p className="text-[11px] leading-relaxed text-steel">
               {longCols <= 1
                 ? '单列 / 单行时排列方式相同，选择 2 列及以上可用。'
                 : '开启后每张图自动填入当前最短的一列（竖向）/ 一行（横向），图与图之间的间距保持一致；关闭则按排 / 列对齐居中。'}
@@ -598,17 +609,17 @@ export function StylePanel() {
       )}
 
       {mode === 'grid' ? (
-        <Section title="画布比例" icon={<IconSliders className="h-3.5 w-3.5 text-brand-500" />}>
+        <Section title="画布比例" icon={<IconSliders className="h-3.5 w-3.5 text-accent" />}>
           <div className="grid grid-cols-4 gap-1.5">
             {RATIOS.map((r) => (
               <button
                 key={r.label}
                 onClick={() => updateStyle({ aspect: r.value })}
                 className={cn(
-                  'h-8 rounded-md border text-[11px] font-medium transition',
+                  'h-8 rounded-full border text-[11px] font-bold tracking-[-0.14px] transition-colors',
                   Math.abs(style.aspect - r.value) < 0.001
-                    ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300'
-                    : 'border-slate-200 text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300',
+                    ? 'chip-accent border-transparent'
+                    : 'border-hairline bg-canvas text-ink hover:border-ink',
                 )}
               >
                 {r.label}
@@ -618,7 +629,7 @@ export function StylePanel() {
         </Section>
       ) : null}
 
-      <Section title="间距与圆角" icon={<IconSliders className="h-3.5 w-3.5 text-brand-500" />}>
+      <Section title="间距与圆角" icon={<IconSliders className="h-3.5 w-3.5 text-accent" />}>
         <div className="space-y-3">
           <Slider label="图片间距" value={style.gap} min={0} max={80} onChange={(v) => updateStyle({ gap: v })} />
           <Slider label="画布边距" value={style.padding} min={0} max={120} onChange={(v) => updateStyle({ padding: v })} />
@@ -631,7 +642,7 @@ export function StylePanel() {
         </div>
       </Section>
 
-      <Section title="背景" icon={<IconPalette className="h-3.5 w-3.5 text-brand-500" />}>
+      <Section title="背景" icon={<IconPalette className="h-3.5 w-3.5 text-accent" />}>
         <Segmented
           className="mb-3 w-full"
           value={style.background.type}
@@ -653,10 +664,10 @@ export function StylePanel() {
                   key={c1 + c2}
                   onClick={() => setBg({ color: c1, color2: c2 })}
                   className={cn(
-                    'h-8 rounded-md border transition hover:scale-105',
+                    'h-8 rounded-full border transition hover:scale-105',
                     style.background.color === c1 && style.background.color2 === c2
-                      ? 'border-brand-500 ring-2 ring-brand-200'
-                      : 'border-slate-200 dark:border-slate-700',
+                      ? 'border-2 border-[#0143b5]'
+                      : 'border-hairline-soft',
                   )}
                   style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
                 />
@@ -667,13 +678,13 @@ export function StylePanel() {
                 type="color"
                 value={style.background.color}
                 onChange={(e) => setBg({ color: e.target.value })}
-                className="h-8 w-12 cursor-pointer rounded border border-slate-200 bg-transparent dark:border-slate-700"
+                className="h-9 w-12 cursor-pointer rounded-lg border border-hairline bg-canvas p-0.5"
               />
               <input
                 type="color"
                 value={style.background.color2}
                 onChange={(e) => setBg({ color2: e.target.value })}
-                className="h-8 w-12 cursor-pointer rounded border border-slate-200 bg-transparent dark:border-slate-700"
+                className="h-9 w-12 cursor-pointer rounded-lg border border-hairline bg-canvas p-0.5"
               />
               <TextInput
                 value={style.background.color2}
@@ -684,12 +695,12 @@ export function StylePanel() {
             <Slider label="渐变角度" value={style.background.angle} min={0} max={360} onChange={(v) => setBg({ angle: v })} />
           </div>
         ) : null}
-        <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+        <p className="text-[11px] leading-relaxed text-steel">
           想要导出透明底的图片：导出时在「导出图片」面板勾选「透明背景」即可（会忽略这里的背景色 / 渐变）；JPG 会自动填充白色。
         </p>
       </Section>
 
-      <Section title="描边" icon={<IconSquare className="h-3.5 w-3.5 text-brand-500" />}>
+      <Section title="描边" icon={<IconSquare className="h-3.5 w-3.5 text-accent" />}>
         <div className="space-y-3">
           <Slider label="描边宽度" value={style.stroke} min={0} max={30} onChange={(v) => updateStyle({ stroke: v })} />
           {style.stroke > 0 ? (
@@ -698,8 +709,8 @@ export function StylePanel() {
         </div>
       </Section>
 
-      <Section title="操作提示" icon={<IconSparkles className="h-3.5 w-3.5 text-brand-500" />}>
-        <ul className="space-y-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+      <Section title="操作提示" icon={<IconSparkles className="h-3.5 w-3.5 text-accent" />}>
+        <ul className="space-y-1 text-[11px] leading-relaxed text-steel">
           <li>· 拖动图片到另一格：交换位置</li>
           <li>· Alt / Shift + 拖动：平移图片</li>
           <li>· 滚轮在图片上：缩放该图片</li>
@@ -751,21 +762,21 @@ export function ExportDialog({
 
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-0 sm:items-center sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-0 sm:items-center sm:p-4" onClick={onClose}>
       <div
-        className="w-full max-w-md animate-fade-up rounded-t-2xl bg-white p-5 shadow-2xl sm:rounded-2xl dark:bg-slate-900"
+        className="w-full max-w-md animate-fade-up rounded-t-xxxl border border-hairline-soft bg-canvas p-6 shadow-[0_1px_4px_rgba(20,22,26,0.3)] sm:rounded-xxxl dark:shadow-none"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
-            <IconDownload className="h-4 w-4 text-brand-500" />
+        <div className="mb-5 flex items-center justify-between">
+          <h3 className="flex items-center gap-2 text-base font-bold tracking-[-0.16px] text-ink-deep">
+            <IconDownload className="h-4 w-4 text-accent" />
             导出图片
           </h3>
           <button
             onClick={onClose}
             title="关闭"
             aria-label="关闭"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-stone transition hover:bg-surface-soft hover:text-ink"
           >
             <IconX className="h-5 w-5" strokeWidth={2.4} />
           </button>
@@ -813,18 +824,18 @@ export function ExportDialog({
           {format === 'jpeg' ? null : (
             <div className="space-y-1">
               <Switch label="透明背景" checked={transparent} onChange={setTransparent} />
-              <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] leading-relaxed text-steel">
                 勾选后导出不带背景（忽略背景色 / 渐变）；JPG 会自动填充白色。
               </p>
             </div>
           )}
 
-          <Button variant="primary" size="lg" className="w-full" onClick={run} disabled={busy}>
+          <Button variant="commerce" size="lg" className="w-full" onClick={run} disabled={busy}>
             <IconDownload className="h-4 w-4" />
             {busy ? '正在渲染…' : '下载图片'}
           </Button>
-          {msg ? <p className="text-center text-xs text-emerald-600 dark:text-emerald-400">{msg}</p> : null}
-          <p className="text-center text-[11px] text-slate-400">图片仅在浏览器本地处理，不会上传到任何服务器</p>
+          {msg ? <p className="text-center text-xs text-success">{msg}</p> : null}
+          <p className="text-center text-[11px] text-steel">图片仅在浏览器本地处理，不会上传到任何服务器</p>
         </div>
       </div>
     </div>
@@ -852,8 +863,8 @@ export function MobileTools() {
           className={cn(
             'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition',
             tool === it.value
-              ? 'bg-brand-600 text-white'
-              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+              ? 'chip-accent'
+              : 'border border-hairline bg-canvas text-ink',
           )}
         >
           {it.label}

@@ -1,5 +1,5 @@
 /**
- * 深色模式对比度回归：浅色底的品牌芯片（bg-brand-50）在 dark 下必须换成深色底，
+ * 深色模式对比度回归：浅色底的软芯片（bg-surface-soft）在 dark 下必须真的换成深色底，
  * 且文字/图标与底色的对比度要够（曾因品牌色板只定义到 700、dark:bg-brand-950 缺失，
  * 深色模式下仍是近白底 + 浅紫字，既刺眼又看不清）。
  * 用法：node scripts/smoke-dark-mode.mjs [baseUrl] [port]
@@ -80,10 +80,10 @@ const enableDark = async () => {
   return isDark ? 'ok' : 'dark-not-enabled'
 }
 
-/** 扫所有写了 bg-brand-50 的元素（浅色芯片），读出深/浅模式下的实际底色与前景色 */
+/** 扫所有浅色芯片（bg-surface-soft），读出深/浅模式下的实际底色与前景色 */
 const PROBE = `(() => {
   const els = Array.from(document.querySelectorAll('*')).filter((e) =>
-    typeof e.className === 'string' && e.className.includes('bg-brand-50') && e.offsetParent !== null,
+    typeof e.className === 'string' && e.className.includes('bg-surface-soft') && e.offsetParent !== null,
   )
   return els.map((e) => {
     const cs = getComputedStyle(e)

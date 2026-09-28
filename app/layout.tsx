@@ -66,7 +66,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#6366f1',
+  themeColor: '#0064e0',
 }
 
 /** 全站结构化数据：WebSite + 免费 Web 应用 */
@@ -135,7 +135,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="bg-white text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+      <body className="bg-canvas text-ink-deep antialiased">
         {children}
         <PWARegister />
       </body>

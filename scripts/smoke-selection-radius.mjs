@@ -94,7 +94,7 @@ await sleep(700)
 
 const READ = `(() => {
   const divs = Array.from(document.querySelectorAll('div')).filter((d) =>
-    typeof d.className === 'string' && d.className.includes('border-brand-') && d.className.includes('absolute'),
+    typeof d.className === 'string' && d.className.includes('border-primary') && d.className.includes('absolute'),
   )
   return divs.map((d) => parseFloat(getComputedStyle(d).borderTopLeftRadius))
 })()`

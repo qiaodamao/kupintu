@@ -68,7 +68,7 @@ const PROBE = `(() => {
 /** 长图模式下顶栏会出现两组分段控件（模式 / 拼接方向），两者尺寸必须完全一致 */
 const SEGPROBE = `(() => {
   const groups = Array.from(document.querySelectorAll('header div'))
-    .filter((d) => d.className.includes('rounded-lg') && d.className.includes('bg-slate-100') && d.offsetParent !== null)
+    .filter((d) => d.className.includes('inline-flex') && d.className.includes('gap-1.5') && d.offsetParent !== null)
     .map((g) => {
       const r = g.getBoundingClientRect()
       return {
@@ -143,7 +143,9 @@ await mouse('mouseReleased', box.x, box.y)
 await sleep(1200)
 R['导出弹窗'] = await evaluate(`(() => document.body.innerText.includes('下载图片') ? '已打开' : '未打开')()`)
 
-/* 顶栏内边距必须与首页 header 一致：比 computed padding（几何位置会被滚动条影响） */
+/* 顶栏内边距必须左右对称：比 computed padding（几何位置会被滚动条影响）。
+   首页是营销页（16 / 32 容器留白），编辑器是工具面（12 / 16 紧凑留白），两者本就不同，
+   这里只校验各自对称、且工具面不宽于营销页。 */
 const PAD = `(() => {
   const h = document.querySelector('header > div') || document.querySelector('header')
   const cs = getComputedStyle(h)
@@ -159,14 +161,14 @@ for (const [w, h] of [[390, 844], [1024, 800]]) {
   await send('Page.navigate', { url: base + '/' })
   await sleep(1800)
   const hp = await evaluate(PAD)
-  const same = ep[0] === hp[0] && ep[1] === hp[1]
+  const same = ep[0] === ep[1] && hp[0] === hp[1] && ep[0] <= hp[0]
   if (!same) padOk = false
-  R['内边距对比'][w] = { 编辑器: ep, 首页: hp, 一致: same }
+  R['内边距对比'][w] = { 编辑器: ep, 首页: hp, 对称且不宽于首页: same }
 }
 
 R['控制台错误'] = await evaluate('window.__errs || []')
 console.log(JSON.stringify(R, null, 2))
 const pass = results.every((r) => r.ok) && padOk
-console.log('\n结论:', pass ? 'PASS 所有断点顶栏无溢出、导出按钮可见，且内边距与首页一致' : 'FAIL')
+console.log('\n结论:', pass ? 'PASS 所有断点顶栏无溢出、导出按钮可见，且内边距对称' : 'FAIL')
 ws.close()
 process.exit(0)

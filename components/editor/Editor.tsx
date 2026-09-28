@@ -84,13 +84,13 @@ export default function Editor() {
   const pick = (files: File[]) => void addFiles(files)
 
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-surface-soft text-ink-deep">
       <TopBar onExport={() => setExportOpen(true)} />
 
       <div className="flex min-h-0 flex-1">
         {/* touch-action: pan-y —— 面板仍可纵向滚动，但双指捏合不会去缩放整个页面 */}
         <aside
-          className="scroll-thin hidden w-[276px] shrink-0 overflow-y-auto border-r border-slate-200 bg-white lg:block dark:border-slate-800 dark:bg-slate-900"
+          className="scroll-thin hidden w-[276px] shrink-0 overflow-y-auto border-r border-hairline-soft bg-canvas lg:block"
           style={{ touchAction: 'pan-y' }}
         >
           <ImagePanel onPick={pick} />
@@ -108,15 +108,15 @@ export default function Editor() {
             />
             {images.length === 0 ? (
               <div className="pointer-events-none absolute inset-0 grid place-items-center p-6">
-                <div className="pointer-events-auto max-w-sm rounded-2xl border border-slate-200 bg-white/95 p-6 text-center shadow-xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
-                  <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-fuchsia-500 text-white">
+                <div className="pointer-events-auto w-full max-w-sm rounded-xxxl border border-hairline-soft bg-canvas p-8 text-center shadow-[0_1px_4px_rgba(20,22,26,0.3)]">
+                  <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-accent">
                     <IconUpload className="h-5 w-5" />
                   </div>
-                  <h2 className="mb-1 text-sm font-semibold">先添加几张图片</h2>
-                  <p className="mb-4 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  <h2 className="mb-1.5 text-[18px] font-bold leading-[1.44] text-ink-deep">先添加几张图片</h2>
+                  <p className="mb-5 text-sm leading-[1.43] tracking-[-0.14px] text-steel">
                     支持批量上传，图片只在你的浏览器里处理，不会上传到服务器。
                   </p>
-                  <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg bg-brand-600 px-5 text-sm font-medium text-white shadow-sm shadow-brand-600/25 transition-colors hover:bg-brand-700">
+                  <label className="text-button inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-primary px-[30px] text-on-primary transition-colors active:bg-primary-deep">
                     <IconImage className="h-4 w-4" />
                     选择图片
                     <input
@@ -138,7 +138,7 @@ export default function Editor() {
         </main>
 
         <aside
-          className="scroll-thin hidden w-[304px] shrink-0 overflow-y-auto border-l border-slate-200 bg-white lg:block dark:border-slate-800 dark:bg-slate-900"
+          className="scroll-thin hidden w-[304px] shrink-0 overflow-y-auto border-l border-hairline-soft bg-canvas lg:block"
           style={{ touchAction: 'pan-y' }}
         >
           <StylePanel />
@@ -149,13 +149,13 @@ export default function Editor() {
       <div className="lg:hidden">
         {tab !== 'none' ? (
           <div
-            className="scroll-thin max-h-[46vh] overflow-y-auto border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+            className="scroll-thin max-h-[46vh] overflow-y-auto border-t border-hairline-soft bg-canvas"
             style={{ touchAction: 'pan-y' }}
           >
             {tab === 'images' ? <ImagePanel onPick={pick} /> : <StylePanel />}
           </div>
         ) : null}
-        <nav className="flex border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <nav className="flex border-t border-hairline-soft bg-canvas">
           {(
             [
               { key: 'images', label: '图片', icon: <IconImage className="h-4 w-4" /> },
@@ -166,8 +166,8 @@ export default function Editor() {
             <button
               key={it.key}
               onClick={() => setTab(it.key)}
-              className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] ${
-                tab === it.key ? 'text-brand-600' : 'text-slate-500 dark:text-slate-400'
+              className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-bold ${
+                tab === it.key ? 'text-accent' : 'text-steel'
               }`}
             >
               {it.icon}
@@ -180,7 +180,7 @@ export default function Editor() {
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} scene={scene} />
 
       {tool !== 'select' ? (
-        <div className="pointer-events-none fixed bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-full bg-slate-900/80 px-3 py-1.5 text-[11px] text-white lg:hidden">
+        <div className="chip-accent pointer-events-none fixed bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-full px-3 py-1.5 text-[11px] shadow-lg lg:hidden">
           已选择绘制工具，点击画布添加
         </div>
       ) : null}

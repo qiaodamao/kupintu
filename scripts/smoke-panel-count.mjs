@@ -93,7 +93,7 @@ R.按钮布局 = await evaluate(`(() => {
 
 // 当前选中的数量（按钮高亮为 brand 底色）
 const activeNum = () => evaluate(`(() => {
-  const b = Array.from(document.querySelectorAll('button')).find(b => /^\\d+$/.test(b.textContent.trim()) && b.className.includes('h-7') && b.className.includes('bg-brand-600'))
+  const b = Array.from(document.querySelectorAll('button')).find(b => /^\\d+$/.test(b.textContent.trim()) && b.className.includes('h-7') && b.className.includes('chip-accent'))
   return b ? b.textContent.trim() : null
 })()`)
 R['选中_初始'] = await activeNum()

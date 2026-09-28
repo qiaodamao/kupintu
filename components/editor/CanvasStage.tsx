@@ -8,7 +8,7 @@ import type { SplitHit } from '@/lib/layout'
 import { findLeafAt, findSplitAt, rectOfNode, splitGeomAt } from '@/lib/layout'
 import { useEditor } from '@/lib/store'
 import { Button } from '@/components/ui'
-import { IconFit, IconPlus, IconTrash, IconX } from '@/components/Icons'
+import { IconFit, IconMinus, IconPlus, IconTrash, IconX } from '@/components/Icons'
 
 type Handle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'start' | 'end'
 
@@ -526,7 +526,7 @@ export default function CanvasStage({
           y: p.y,
           w: 220,
           h: 160,
-          color: '#6366f1',
+          color: '#0064e0',
           fill: null,
           strokeWidth: 8,
           radius: 8,
@@ -1011,12 +1011,12 @@ export default function CanvasStage({
         <>
           {/* 分割线高亮 */}
           <div
-            className="pointer-events-none absolute rounded-full bg-brand-500 shadow-[0_0_0_2px_rgba(255,255,255,0.9)] dark:shadow-[0_0_0_2px_rgba(15,23,42,0.9)]"
+            className="pointer-events-none absolute rounded-full bg-primary shadow-[0_0_0_2px_rgba(255,255,255,0.9)] dark:shadow-[0_0_0_2px_rgba(10,19,23,0.9)]"
             style={splitBar.line}
           />
           {/* 中间拖拽手柄 */}
           <div
-            className="pointer-events-none absolute grid h-6 w-6 place-items-center rounded-full bg-brand-500 text-white shadow-lg ring-2 ring-white dark:ring-slate-900"
+            className="pointer-events-none absolute grid h-6 w-6 place-items-center rounded-full bg-primary text-on-primary shadow-lg ring-2 ring-white dark:ring-canvas"
             style={{ left: splitBar.cx - 12, top: splitBar.cy - 12 }}
           >
             {splitBar.isV ? (
@@ -1052,41 +1052,41 @@ export default function CanvasStage({
 
       {hoverRect && hoverSlot !== selectedSlotId ? (
         <div
-          className="pointer-events-none absolute border-2 border-brand-400/80 bg-brand-400/10"
+          className="pointer-events-none absolute border-2 border-primary/70 bg-primary/10"
           style={boxScreen(hoverRect)}
         />
       ) : null}
 
       {selSlot ? (
-        <div className="pointer-events-none absolute border-2 border-brand-500" style={boxScreen(selSlot.rect)}>
+        <div className="pointer-events-none absolute border-2 border-primary" style={boxScreen(selSlot.rect)}>
           {selSlot.placement?.imageId ? (
-            <div className="pointer-events-auto absolute -top-9 left-0 flex items-center gap-1 rounded-lg bg-white/95 px-1.5 py-1 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+            <div className="pointer-events-auto absolute -top-9 left-0 flex items-center gap-1 rounded-xl bg-canvas/95 px-1.5 py-1 shadow-[0_1px_4px_rgba(20,22,26,0.3)] ring-1 ring-hairline-soft">
               <button
-                className="grid h-6 w-6 place-items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="grid h-6 w-6 place-items-center rounded-full hover:bg-surface-soft"
                 title="缩小"
                 onClick={() => setSlotTransform(selSlot.id, { scale: (selSlot.placement!.tf.scale ?? 1) * 0.9 })}
               >
-                <span className="text-sm leading-none text-slate-700 dark:text-slate-200">−</span>
+                <IconMinus className="h-3.5 w-3.5 text-ink" />
               </button>
-              <span className="w-10 text-center font-mono text-[11px] text-slate-500">
+              <span className="w-10 text-center font-mono text-[11px] text-steel">
                 {Math.round((selSlot.placement!.tf.scale ?? 1) * 100)}%
               </span>
               <button
-                className="grid h-6 w-6 place-items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="grid h-6 w-6 place-items-center rounded-full hover:bg-surface-soft"
                 title="放大"
                 onClick={() => setSlotTransform(selSlot.id, { scale: (selSlot.placement!.tf.scale ?? 1) * 1.1 })}
               >
-                <IconPlus className="h-3.5 w-3.5 text-slate-700 dark:text-slate-200" />
+                <IconPlus className="h-3.5 w-3.5 text-ink" />
               </button>
               <button
-                className="grid h-6 w-6 place-items-center rounded hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="grid h-6 w-6 place-items-center rounded-full hover:bg-surface-soft"
                 title="复位"
                 onClick={() => setSlotTransform(selSlot.id, { scale: 1, dx: 0, dy: 0 })}
               >
-                <IconFit className="h-3.5 w-3.5 text-slate-700 dark:text-slate-200" />
+                <IconFit className="h-3.5 w-3.5 text-ink" />
               </button>
               <button
-                className="grid h-6 w-6 place-items-center rounded hover:bg-rose-50 dark:hover:bg-rose-950"
+                className="grid h-6 w-6 place-items-center rounded-full hover:bg-critical/10"
                 title={mode === 'long' ? '从拼接中删除这张' : '移除该图'}
                 onClick={() => {
                   const id = selSlot.placement?.imageId
@@ -1096,7 +1096,7 @@ export default function CanvasStage({
                   else setSlotImage(selSlot.id, null)
                 }}
               >
-                <IconTrash className="h-3.5 w-3.5 text-rose-500" />
+                <IconTrash className="h-3.5 w-3.5 text-critical" />
               </button>
             </div>
           ) : null}
@@ -1106,7 +1106,7 @@ export default function CanvasStage({
       {selected && selBounds ? (
         <>
           <div
-            className="pointer-events-none absolute border border-dashed border-brand-500"
+            className="pointer-events-none absolute border border-dashed border-primary"
             style={boxScreen({ x: selBounds.x - 4, y: selBounds.y - 4, w: selBounds.w + 8, h: selBounds.h + 8 })}
           />
           {(selected.type === 'arrow'
@@ -1117,7 +1117,7 @@ export default function CanvasStage({
             return (
               <div
                 key={hp.h}
-                className="absolute h-2.5 w-2.5 rounded-sm border border-brand-600 bg-white shadow"
+                className="absolute h-2.5 w-2.5 rounded-sm border border-primary bg-canvas shadow"
                 style={{ left: sp.x - 5, top: sp.y - 5, cursor: CURSORS[hp.h] }}
                 onPointerDown={(e) => {
                   e.stopPropagation()
@@ -1132,7 +1132,7 @@ export default function CanvasStage({
             )
           })}
           <div
-            className="absolute flex items-center gap-1 rounded-lg bg-white/95 px-1.5 py-1 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700"
+            className="absolute flex items-center gap-1 rounded-xl bg-canvas/95 px-1.5 py-1 shadow-[0_1px_4px_rgba(20,22,26,0.3)] ring-1 ring-hairline-soft"
             style={{
               left: toScreen(selBounds.x, selBounds.y).x,
               top: Math.max(4, toScreen(selBounds.x, selBounds.y).y - 40),
@@ -1143,27 +1143,27 @@ export default function CanvasStage({
               type="color"
               value={selected.type === 'text' ? selected.color : selected.color}
               onChange={(e) => updateAnnotation(selected.id, { color: e.target.value } as any)}
-              className="h-6 w-7 cursor-pointer rounded border border-slate-200 bg-transparent"
+              className="h-6 w-7 cursor-pointer rounded-md border border-hairline bg-canvas"
               title="颜色"
             />
             {selected.type === 'text' ? (
               <>
                 <button
-                  className="h-6 rounded px-1.5 text-[11px] font-bold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+                  className="h-6 rounded-full px-1.5 text-[11px] font-bold text-ink hover:bg-surface-soft"
                   onClick={() => updateAnnotation(selected.id, { bold: !selected.bold } as any)}
                   title="加粗"
                 >
                   B
                 </button>
                 <button
-                  className="h-6 rounded px-1.5 text-[11px] text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+                  className="h-6 rounded px-1.5 text-[11px] text-ink hover:bg-surface-soft"
                   onClick={() => setEditingText({ id: selected.id, value: selected.text })}
                   title="编辑文字"
                 >
                   编辑
                 </button>
                 <button
-                  className="h-6 rounded px-1.5 text-[11px] text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
+                  className="h-6 rounded px-1.5 text-[11px] text-ink hover:bg-surface-soft"
                   onClick={() =>
                     updateAnnotation(selected.id, { bg: selected.bg ? null : 'rgba(255,255,255,0.85)' } as any)
                   }
@@ -1194,18 +1194,18 @@ export default function CanvasStage({
                     type="color"
                     value={(selected as any).fill ?? '#ffffff'}
                     onChange={(e) => updateAnnotation(selected.id, { fill: e.target.value } as any)}
-                    className="h-6 w-7 cursor-pointer rounded border border-slate-200 bg-transparent"
+                    className="h-6 w-7 cursor-pointer rounded-md border border-hairline bg-canvas"
                     title="填充"
                   />
                 ) : null}
               </>
             ) : null}
             <button
-              className="grid h-6 w-6 place-items-center rounded hover:bg-rose-50"
+              className="grid h-6 w-6 place-items-center rounded-full hover:bg-critical/10"
               onClick={() => removeAnnotation(selected.id)}
               title="删除"
             >
-              <IconX className="h-3.5 w-3.5 text-rose-500" />
+              <IconX className="h-3.5 w-3.5 text-critical" />
             </button>
           </div>
         </>
@@ -1223,7 +1223,7 @@ export default function CanvasStage({
           onKeyDown={(e) => {
             if (e.key === 'Escape') setEditingText(null)
           }}
-          className="absolute z-20 rounded-lg border-2 border-brand-500 bg-white/95 p-1 text-sm shadow-lg outline-none dark:bg-slate-800 dark:text-white"
+          className="absolute z-20 rounded-lg border-2 border-primary bg-canvas/95 p-1 text-sm text-ink shadow-[0_1px_4px_rgba(20,22,26,0.3)] outline-none"
           style={{
             left: toScreen(
               (annotations.find((a) => a.id === editingText.id) as any)?.x ?? 0,
@@ -1241,48 +1241,49 @@ export default function CanvasStage({
       ) : null}
 
       {selZoomed ? (
-        <div className="pointer-events-none absolute bottom-3 left-3 max-w-[min(90%,26rem)] rounded-lg bg-slate-900/85 px-3 py-1.5 text-[11px] leading-5 text-white shadow-lg backdrop-blur">
+        <div className="chip-accent pointer-events-none absolute bottom-3 left-3 max-w-[min(90%,26rem)] rounded-full px-3 py-1.5 text-[11px] leading-5 backdrop-blur">
           已放大 {selZoomPct}% · <b className="font-semibold">按住左键拖动</b>可调整显示区域 · 滚轮继续缩放 · Shift+拖动交换图片
         </div>
       ) : activeSplit ? (
-        <div className="pointer-events-none absolute bottom-3 left-3 rounded-lg bg-slate-900/85 px-3 py-1.5 text-[11px] text-white shadow-lg backdrop-blur">
+        <div className="chip-accent pointer-events-none absolute bottom-3 left-3 rounded-full px-3 py-1.5 text-[11px] backdrop-blur">
           拖动可调整两侧图片占比
         </div>
       ) : hoverZoomed && !selZoomed ? (
-        <div className="pointer-events-none absolute bottom-3 left-3 rounded-lg bg-slate-900/75 px-3 py-1.5 text-[11px] text-white shadow-lg backdrop-blur">
+        <div className="chip-accent pointer-events-none absolute bottom-3 left-3 rounded-full px-3 py-1.5 text-[11px] opacity-90 backdrop-blur">
           按住左键可拖动调整位置
         </div>
       ) : null}
 
       <div
-        className="pointer-events-auto absolute bottom-3 right-3 flex items-center gap-1 rounded-lg bg-white/90 px-1.5 py-1 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700"
+        className="pointer-events-auto absolute bottom-3 right-3 flex items-center gap-1 rounded-full bg-canvas/90 px-1.5 py-1 shadow-[0_1px_4px_rgba(20,22,26,0.3)] ring-1 ring-hairline-soft"
         title="滚轮缩放：光标在图片上缩放该图片，光标在空白处缩放整个画布"
       >
         <Button
           size="sm"
           variant="ghost"
           title="缩小画布"
+          className="!h-7 !w-7 !px-0"
           onClick={() => setView((v) => ({ ...v, zoom: Math.max(0.2, v.zoom * 0.9) }))}
         >
-          {/* 只放大符号本身，按钮尺寸保持不变 */}
-          <span className="text-lg font-medium leading-none">−</span>
+          <IconMinus className="h-3.5 w-3.5 text-ink" />
         </Button>
-        <span className="w-12 text-center font-mono text-[11px] text-slate-500">{Math.round(view.zoom * 100)}%</span>
+        <span className="w-12 text-center font-mono text-[11px] text-steel">{Math.round(view.zoom * 100)}%</span>
         <Button
           size="sm"
           variant="ghost"
           title="放大画布"
+          className="!h-7 !w-7 !px-0"
           onClick={() => setView((v) => ({ ...v, zoom: Math.min(4, v.zoom * 1.1) }))}
         >
-          <span className="text-lg font-medium leading-none">+</span>
+          <IconPlus className="h-3.5 w-3.5 text-ink" />
         </Button>
-        <Button size="sm" variant="ghost" onClick={fit} title="适应窗口">
+        <Button size="sm" variant="ghost" onClick={fit} title="适应窗口" className="!h-7 !w-7 !px-0 text-ink">
           <IconFit className="h-3.5 w-3.5" />
         </Button>
       </div>
 
       {tool !== 'select' ? (
-        <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-brand-600/90 px-3 py-1 text-xs text-white shadow">
+        <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-primary/90 px-3 py-1 text-xs text-on-primary shadow">
           {tool === 'text'
             ? '点击画布添加文字（添加后可双击编辑）'
             : tool === 'arrow'
