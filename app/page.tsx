@@ -215,7 +215,7 @@ export default function Home() {
             <IconShield className="h-3.5 w-3.5 text-success" />
             纯本地处理 · 无需登录 · 无水印
           </span>
-          <h1 className="text-[32px] font-medium leading-[1.16] tracking-tight text-ink-deep sm:text-[44px] md:text-[56px] lg:text-[64px]">
+          <h1 className="text-[32px] font-bold leading-[1.16] tracking-tight text-ink-deep sm:text-[44px] md:text-[56px] lg:text-[64px]">
             免费在线<span className="text-accent">拼图</span>
             <br />
             与长图拼接工具
@@ -243,7 +243,7 @@ export default function Home() {
       {/* Features：card-icon-feature（16px 圆角 + hairline-soft 描边 + 24px 内边距） */}
       <section id="features" className="scroll-mt-20 py-16 md:py-20">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
-          <h2 className="text-center text-[28px] font-medium leading-[1.21] text-ink-deep md:text-[36px]">
+          <h2 className="text-center text-[28px] font-bold leading-[1.21] text-ink-deep md:text-[36px]">
             超越传统拼图的全能画布
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-center text-[16px] leading-[1.5] text-steel">
@@ -266,7 +266,7 @@ export default function Home() {
       {/* Steps */}
       <section id="steps" className="scroll-mt-20 bg-surface-soft py-16 md:py-20">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
-          <h2 className="text-center text-[28px] font-light leading-[1.21] text-ink-deep md:text-[36px] md:font-normal">
+          <h2 className="text-center text-[28px] font-bold leading-[1.21] text-ink-deep md:text-[36px]">
             三步做出一张好拼图
           </h2>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
@@ -286,7 +286,7 @@ export default function Home() {
       {/* Scenes */}
       <section id="scenes" className="scroll-mt-20 py-16 md:py-20">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
-          <h2 className="text-center text-[28px] font-medium leading-[1.21] text-ink-deep md:text-[36px]">
+          <h2 className="text-center text-[28px] font-bold leading-[1.21] text-ink-deep md:text-[36px]">
             这些场景，它都能搞定
           </h2>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -306,7 +306,7 @@ export default function Home() {
           <div className="chip-accent rounded-xxxl px-6 py-12 sm:px-12 sm:py-16">
             <div className="mx-auto max-w-3xl">
               <IconShield className="h-8 w-8" />
-              <h2 className="mt-5 text-[28px] font-medium leading-[1.21] md:text-[36px]">
+              <h2 className="mt-5 text-[28px] font-bold leading-[1.21] md:text-[36px]">
                 你的照片，从未离开你的设备
               </h2>
               <p className="mt-4 max-w-2xl text-[16px] leading-[1.5] opacity-75">
@@ -327,7 +327,7 @@ export default function Home() {
       {/* FAQ：faq-accordion-item（16px 圆角 + hairline-soft 描边 + 24px 内边距） */}
       <section id="faq" className="scroll-mt-20 py-16 md:py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-8">
-          <h2 className="text-center text-[28px] font-medium leading-[1.21] text-ink-deep md:text-[36px]">
+          <h2 className="text-center text-[28px] font-bold leading-[1.21] text-ink-deep md:text-[36px]">
             常见问题
           </h2>
           <div className="mt-10 space-y-3">
@@ -350,7 +350,7 @@ export default function Home() {
       {/* CTA */}
       <section className="pb-24">
         <div className="mx-auto max-w-[1280px] px-4 text-center sm:px-8">
-          <h2 className="text-[28px] font-medium leading-[1.21] text-ink-deep md:text-[36px]">
+          <h2 className="text-[28px] font-bold leading-[1.21] text-ink-deep md:text-[36px]">
             现在就去拼一张
           </h2>
           <p className="mt-3 text-[15px] text-steel">免费、无限制、无需注册，打开就能用。</p>
